@@ -1,25 +1,34 @@
+#include "User.h"
+#include "Signup.h"
 #include "Login.h"
 
-using namespace std;
+int x;
 
 int main()
 {
-    // Testing Constructor
-    Workout w1("Bench Press", 3, 12, 120, 57, 5, 6);
-    //w1.displayDetails();
-    w1.displayDetailsTest();
+    // Testing User
+    User u1(1, "user1", "pass1");
+    u1.displayDetails();
 
-    // Testing Setters
-    Workout w2;
-    w2.setExercise("Squats");
-    w2.setSets(6);
-    w2.setReps(8);
-    w2.setWeight(100);
-    w2.setMins(25);
-    w2.setTenSeconds(4);
-    w2.setSeconds(9);
-    w2.displayDetailsTest();
-    cin >> x;
+    
+    // Testing Signup
+    Signup s;
+    s.registerAccount();
+    s.displayDetails();
 
-    return 0;
+
+    // Testing Login
+    Login l;
+    l.setId(s.getId());
+    l.setUsername(s.getUsername());
+    l.setPassword(s.getPassword());
+    string u, p;
+    l.displayLogin(u,p);
+    l.loginUser(u,p);
+
+
+
+    cin.ignore();
+    cin.get();
+    return 0; 
 };
