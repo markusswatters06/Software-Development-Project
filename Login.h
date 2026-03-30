@@ -14,6 +14,6 @@ class Login : public User{
 
         // Functions
         bool loginUser(string u, string p);
-        void displayLogin(string &u, string &p);
+        void loggingIn(string &u, string &p);
 };
 #endif
