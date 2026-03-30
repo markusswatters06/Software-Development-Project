@@ -7,26 +7,48 @@ using namespace std;
 class User {
     protected:
         int id;
-        string username;
+        string firstName;
+        string surname;
+        string email;
+        int phone;
+        int dobDay;
+        int dobMonth;
+        int dobYear;
         string password;
 
     public:
         // Constructors/Destructors
-        User();    // Default Constructor
-        User(int i, string u, string p);  // Overloaded Constructor
-        ~User();   // Destructor
+        User();                             // Default Constructor
+        User(int i, string fn, string sn, string e, int ph, int dd, int dm, int dy, string p);    // Overloaded Constructor
+        ~User();                            // Destructor
+
 
         // Getters
-        int getId(){return id;}                 // ID
-        string getUsername(){return username;}  // Username
-        string getPassword(){return password;}  // Password
+        int getId(){return id;}                     // ID
+        string getFirstName(){return firstName;}    // First Name
+        string getSurname(){return surname;}        // Surname
+        string getEmail(){return email;}            // Email
+        int getPhone(){return phone;}               // Phone
+        int getDobDay(){return dobDay;}             // DOB Day
+        int getDobMonth(){return dobMonth;}         // DOB Month
+        int getDobYear(){return dobYear;}           // DOB Year
+        string getPassword(){return password;}      // Password
+
 
         // Setters
-        void setId(int i){id = i;}                  // ID
-        void setUsername(string u){username = u;}   // Username
-        void setPassword(string p){password = p;}   // Password
+        void setId(int i){id = i;}                      // ID
+        void setFirstName(string fn){firstName = fn;}   // First Name
+        void setSurname(string sn){surname = sn;}       // Surname
+        void setEmail(string e){email = e;}             // Email
+        void setPhone(int ph){phone = ph;}              // Phone
+        void setDobDay(int dd){dobDay = dd;}            // DOB Day
+        void setDobMonth(int dm){dobMonth = dm;}        // DOB Month
+        void setDobYear(int dy){dobYear = dy;}          // DOB Year
+        void setPassword(string p){password = p;}       // Password
+
 
         // Functions
         void displayDetails();
+        bool getValidDate(int& dobDay, int& dobMonth, int& dobYear);
 };
 #endif 
