@@ -1,22 +1,26 @@
 #include "Login.h"
 
-Login::Login()
+Login::Login() : User(){}
+
+Login::Login(int i, string u, string p) : User(i,u,p){}
+
+bool Login::loginUser(string u, string p)
 {
-    id = 0;
-    username = "N/A";
-    password = "N/A";
-    cout << "Default Constructor Called." << endl;
+    if (u == getUsername() && p == getPassword())
+    {
+        cout << "\nLogin Successful!" << endl;
+        return true;
+    }
+    else{
+        cout <<"\nInvalid Username or Password!" << endl;
+        return false;
+    }
 }
 
-Login::Login(int i, string u, string p)
+void Login::displayLogin(string &u, string &p)
 {
-    id = i;
-    username = u;
-    password = p;
-    cout << i << " constructed." << endl;
-}
-
-Login::~Login()
-{
-    cout << " destroyed." << endl;
+    cout << "\nEnter Username: ";
+    cin >> u;
+    cout << "\nEnter Password: ";
+    cin >> p;
 }
