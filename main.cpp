@@ -23,7 +23,7 @@ int main()
     l.setUsername(s.getUsername());
     l.setPassword(s.getPassword());
     string u, p;
-    l.displayLogin(u,p);
+    l.loggingIn(u,p);
     l.loginUser(u,p);
 
 
