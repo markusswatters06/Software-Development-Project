@@ -1,26 +1,25 @@
 #include "Login.h"
 
-Login::Login() : User(){}
+Login::Login() : User() {}
 
-Login::Login(int i, string u, string p) : User(i,u,p){}
+Login::Login(int i, string p) {
+    setId(i);
+    setPassword(p);
+} 
 
-bool Login::loginUser(string u, string p)
-{
-    if (u == getUsername() && p == getPassword())
-    {
+bool Login::loginUser(int i, string p) {
+    if (i == getId() && p == getPassword()) {
         cout << "\nLogin Successful!" << endl;
         return true;
-    }
-    else{
-        cout <<"\nInvalid Username or Password!" << endl;
+    } else {
+        cout << "\nInvalid ID or Password!" << endl;
         return false;
     }
 }
 
-void Login::loggingIn(string &u, string &p)
-{
-    cout << "\nEnter Username: ";
-    cin >> u;
-    cout << "\nEnter Password: ";
+void Login::loggingIn(int &i, string &p) {
+    cout << "\nEnter ID: ";
+    cin >> i;
+    cout << "Enter Password: ";
     cin >> p;
 }
