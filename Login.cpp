@@ -17,7 +17,7 @@ bool Login::loginUser(string u, string p)
     }
 }
 
-void Login::displayLogin(string &u, string &p)
+void Login::loggingIn(string &u, string &p)
 {
     cout << "\nEnter Username: ";
     cin >> u;
