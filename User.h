@@ -7,8 +7,7 @@ using namespace std;
 class User {
     protected:
         int id;
-        string firstName;
-        string surname;
+        string name;
         string email;
         int phone;
         int dobDay;
@@ -19,14 +18,13 @@ class User {
     public:
         // Constructors/Destructors
         User();                             // Default Constructor
-        User(int i, string fn, string sn, string e, int ph, int dd, int dm, int dy, string p);    // Overloaded Constructor
+        User(int i, string n, string e, int ph, int dd, int dm, int dy, string p);    // Overloaded Constructor
         ~User();                            // Destructor
 
 
         // Getters
         int getId(){return id;}                     // ID
-        string getFirstName(){return firstName;}    // First Name
-        string getSurname(){return surname;}        // Surname
+        string getName(){return name;}              // First Name
         string getEmail(){return email;}            // Email
         int getPhone(){return phone;}               // Phone
         int getDobDay(){return dobDay;}             // DOB Day
@@ -37,8 +35,7 @@ class User {
 
         // Setters
         void setId(int i){id = i;}                      // ID
-        void setFirstName(string fn){firstName = fn;}   // First Name
-        void setSurname(string sn){surname = sn;}       // Surname
+        void setFirstName(string n){name = n;}          // First Name
         void setEmail(string e){email = e;}             // Email
         void setPhone(int ph){phone = ph;}              // Phone
         void setDobDay(int dd){dobDay = dd;}            // DOB Day
@@ -49,6 +46,9 @@ class User {
 
         // Functions
         void displayDetails();
+        void registerAccount();
+        bool loginUser(int i, string p);
+        void loggingIn(int &i, string &p);
         bool getValidDate(int& dobDay, int& dobMonth, int& dobYear);
 };
 #endif 
