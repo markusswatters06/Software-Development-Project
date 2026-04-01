@@ -1,53 +1,54 @@
-#include "User.h"
+#ifndef USER_H
+#define USER_H
 
-User::User()
-    : id(0), firstName("N/A"), surname("N/A"), email("N/A"), phone(0), dobDay(0), dobMonth(0), dobYear(0), password("N/A"){}
+#include <iostream>
+using namespace std;
 
-User::User(int i, string fn, string sn, string e, int ph, int dd, int dm, int dy, string p)
-    : id(i), firstName(fn), surname(sn), email(e), phone(ph), dobDay(dd), dobMonth(dm), dobYear(dy), password(p){} 
+class User {
+    protected:
+        int id;
+        string name;
+        string email;
+        int phone;
+        int dobDay;
+        int dobMonth;
+        int dobYear;
+        string password;
 
-User::~User(){}
+    public:
+        // Constructors/Destructors
+        User();                             // Default Constructor
+        User(int i, string n, string e, int ph, int dd, int dm, int dy, string p);    // Overloaded Constructor
+        ~User();                            // Destructor
 
-void User::displayDetails()
-{
-    cout << "ID: " << id << endl;
-    cout << "Email Address: " << email << endl;
-    cout << "Password: " << password << endl;
-    cout << "Name: " << firstName << " " << surname << endl;
-    cout << "Phone Number: 0" << phone << endl;
-    cout << "Date Of Birth: " << dobDay << "/" << dobMonth << "/" << dobYear << endl;
-}
 
-bool User::getValidDate(int& d, int& m, int& y) {
-    while (true) {
-        cout << "(DD): ";
-        cin >> d;
-        cout << "(MM): ";
-        cin >> m;
-        cout << "(YYYY): ";
-        cin >> y;
+        // Getters
+        int getId(){return id;}                     // ID
+        string getName(){return name;}              // First Name
+        string getEmail(){return email;}            // Email
+        int getPhone(){return phone;}               // Phone
+        int getDobDay(){return dobDay;}             // DOB Day
+        int getDobMonth(){return dobMonth;}         // DOB Month
+        int getDobYear(){return dobYear;}           // DOB Year
+        string getPassword(){return password;}      // Password
 
-        // Basic Checks
-        if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900) {
-            cout << "ERROR: Invalid date.\n";
-            continue;
-        }
 
-        // Days in a Month
-        int maxDays;
+        // Setters
+        void setId(int i){id = i;}                      // ID
+        void setName(string n){name = n;}          // First Name
+        void setEmail(string e){email = e;}             // Email
+        void setPhone(int ph){phone = ph;}              // Phone
+        void setDobDay(int dd){dobDay = dd;}            // DOB Day
+        void setDobMonth(int dm){dobMonth = dm;}        // DOB Month
+        void setDobYear(int dy){dobYear = dy;}          // DOB Year
+        void setPassword(string p){password = p;}       // Password
 
-        if (m == 2)
-            maxDays = 28;
-        else if (m == 4 || m == 6 || m == 9 || m == 11)
-            maxDays = 30;
-        else
-            maxDays = 31;
 
-        if (d > maxDays) {
-            cout << "ERROR: Invalid day for that month.\n";
-            continue;
-        }
-
-        return true; // only returns when valid
-    }
-}
+        // Functions
+        void displayDetails();
+        void registerAccount();
+        bool loginUser(int i, string p);
+        void loggingIn(int &i, string &p);
+        bool getValidDate(int& dobDay, int& dobMonth, int& dobYear);
+};
+#endif 
