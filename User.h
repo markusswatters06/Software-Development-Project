@@ -35,7 +35,7 @@ class User {
 
         // Setters
         void setId(int i){id = i;}                      // ID
-        void setFirstName(string n){name = n;}          // First Name
+        void setName(string n){name = n;}          // First Name
         void setEmail(string e){email = e;}             // Email
         void setPhone(int ph){phone = ph;}              // Phone
         void setDobDay(int dd){dobDay = dd;}            // DOB Day
