@@ -35,7 +35,7 @@ class User {
 
         // Setters
         void setId(int i){id = i;}                      // ID
-        void setName(string n){name = n;}          // First Name
+        void setName(string n){name = n;}               // First Name
         void setEmail(string e){email = e;}             // Email
         void setPhone(int ph){phone = ph;}              // Phone
         void setDobDay(int dd){dobDay = dd;}            // DOB Day
@@ -45,10 +45,16 @@ class User {
 
 
         // Functions
-        void displayDetails();
+        virtual void displayMenu();
+        virtual void displayDetails();
         void registerAccount();
-        bool loginUser(int i, string p);
-        void loggingIn(int &i, string &p);
-        bool getValidDate(int& dobDay, int& dobMonth, int& dobYear);
+        bool verifyUser(int i, string p);
+        void logIn(int &i, string &p);
+        bool getValidDate(int& dd, int& dm, int& dy);
+
+        // UI
+        void clearScreen();
+        void line();
+        void title(string t); 
 };
 #endif 
