@@ -16,7 +16,7 @@ class User {
         string password;
 
     public:
-        // Constructors/Destructors
+        // Constructors & Destructors
         User();                             // Default Constructor
         User(int i, string n, string e, int ph, int dd, int dm, int dy, string p);    // Overloaded Constructor
         ~User();                            // Destructor
@@ -47,7 +47,7 @@ class User {
         // Functions
         virtual void displayMenu();
         virtual void displayDetails();
-        void registerAccount();
+        virtual void registerAccount();
         bool verifyUser(int i, string p);
         void logIn(int &i, string &p);
         bool getValidDate(int& dd, int& dm, int& dy);
