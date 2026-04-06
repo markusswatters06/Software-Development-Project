@@ -2,6 +2,7 @@
 #define TRAINER_H
 
 #include "User.h"
+#include "Session.h"
 
 class Trainer : public User{
     private:
@@ -13,6 +14,7 @@ class Trainer : public User{
         int sessionsPerWeek;    // Sessions Available per Week
         double sessionRate;     // Session Rate (€)
         string availablility;   // Session Availabilty
+        Session trainerSession; //
 
     public:
         // Constructors & Destructor
@@ -42,7 +44,8 @@ class Trainer : public User{
 
 
         // Functions
-
+        void registerAccount() override;
+        
         // Menu
         void displayMenu();
         void displayDetails();
@@ -53,11 +56,15 @@ class Trainer : public User{
 
         // Profile
         void editProfile();
+
+        // Session
+        void createSession();
+        void displaySession();
+        void editSession();
         
 
         // UI
         void clearScreen();
         void line();
-        void title(string t);
 };
 #endif
