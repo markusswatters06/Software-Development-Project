@@ -12,6 +12,40 @@ Trainer::~Trainer()
 {}
 
 
+// Register Account
+void Trainer::registerAccount()
+{
+    line();
+    cout << "           TRAINER REGISTRATION" << endl;
+    line();
+
+    User::registerAccount();
+
+        // Step 1: base user info
+    User::registerAccount();
+
+    cout << "Enter Bio: ";
+    cin >> bio;
+
+    cout << "Enter Certification: ";
+    cin >> cert;
+
+    cout << "Enter Years Experience: ";
+    cin >> yearsExp;
+
+    cout << "Enter Session Rate: ";
+    cin >> sessionRate;
+
+    cout << "Enter Availability: ";
+    cin >> availablility;
+
+    rating = 0.0;
+    clients = 0;
+    sessionsPerWeek = 0;
+
+    cout << "\nTrainer Account Created Successfully!\n";
+}
+
 // Menu
 // Main Menu
 void Trainer::displayMenu()
@@ -135,7 +169,7 @@ void Trainer::sessionMenu()
     {
         cout << "  1) View Sessions" << endl;
         cout << "  2) Create Session" << endl;
-        cout << "  3) Remove Session" << endl;
+        cout << "  3) Remove Session(LOCKED)" << endl;
         cout << "  4) Edit Session" << endl;
         cout << "  0) Return to Main Menu" << endl;
         line();
@@ -145,10 +179,10 @@ void Trainer::sessionMenu()
 
         switch(choice)
         {
-            case 1: break;
-            case 2: break;
+            case 1: displaySession(); break;
+            case 2: createSession(); break;
             case 3: break;
-            case 4: break;
+            case 4: editSession(); break;
             case 0: clearScreen(); displayMenu(); break;
         }  
     }
@@ -382,6 +416,41 @@ void Trainer::editProfile()
     while (choice != 11);
 }
 
+// Create Session
+void Trainer::createSession()
+{
+    trainerSession.createSession();
+}
+
+// View Session
+void Trainer::displaySession()
+{
+    int choice;
+    trainerSession.displaySession();
+    cout << "  1) Edit Session" << endl;
+    cout << "  0) Return to Menu" << endl;
+    cout << "  Choice: ";
+    do
+    {
+        cin >> choice;
+        switch(choice)
+        {
+        case 1: editSession(); break;
+        case 0: displayMenu(); break;
+        } 
+    }
+    while (choice != 1);
+
+    clearScreen();
+    
+}
+
+// Edit Session
+void Trainer::editSession()
+{
+    trainerSession.editSession();
+}
+
 
 // UI
 void Trainer::clearScreen() 
@@ -395,9 +464,3 @@ void Trainer::line()
     cout << "========================================\n"; 
 }
 
-void Trainer::title(string t) 
-{ 
-    line(); 
-    cout << "          " << t << endl; 
-    line(); 
-}
