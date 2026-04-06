@@ -21,6 +21,33 @@ Client::Client(int i, string n, string e, int ph, int dd, int dm, int dy, string
 Client::~Client() {}
 
 
+// Registeration
+void Client::registerAccount()
+{
+    line();
+    cout << "           CLIENT REGISTRATION" << endl;
+    line();
+
+    User::registerAccount();
+
+    cout << "Enter Height (cm): ";
+    cin >> height;
+
+    cout << "Enter Weight (kg): ";
+    cin >> weight;
+
+    cout << "Enter Goal: ";
+    cin >> goal;
+
+    cout << "Enter Membership Type: ";
+    cin >> membershipType;
+
+    cout << "Enter Expiry Date:" << endl;
+    getValidDate(expiryDay, expiryMonth, expiryYear);
+
+    cout << "\nAccount Successfully Created." << endl;
+}
+
 // Client Menu
 void Client::displayMenu()
 {       
@@ -50,8 +77,8 @@ void Client::displayMenu()
             case 3: progressMenu(); break;
             case 4: workoutMenu(); break;
             case 5: sessionMenu(); break;
-            case 0: ; break;
-            default: cout << "\n\nERROR: Invalid Choice\n";
+            case 0: displayMenu(); break;
+            default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         }
 
     } 
@@ -92,7 +119,7 @@ void Client::displayDetails()
         switch(choice){
             case 1: editProfile(); break;
             case 0: displayMenu(); break;
-            default: cout << "\n\nERROR: Invalid Choice\n";
+            default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         }
     }
         while (choice != 2);
@@ -127,8 +154,8 @@ void Client::membershipMenu()
         {
             case 1: renewMembership(); break;
             case 2: upgradeMembership(); break;
-            case 0: displayMenu();
-            default: cout << "\nERROR: Invalid Choice\n";
+            case 0: displayMenu(); break;
+            default: cout << "\n*ERROR: Invalid Choice*\n\n";
         }
 
     } while(choice != 0); 
@@ -160,7 +187,7 @@ void Client::progressMenu()
             case 1: viewProgress(); break;
             case 2: editProgress(); break;
             case 0: displayMenu(); break;
-            default: cout << "\n\nERROR: Invalid Choice\n";
+            default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         }
     }
     while(choice != 2);
@@ -194,7 +221,7 @@ void Client::workoutMenu()
             case 2: displayWorkout(); break;
             case 3: editWorkout(); break;
             case 0: displayMenu(); break;
-            default: cout << "\n\nERROR: Invalid Choice\n";
+            default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         }
     }
         while(choice != 4);
@@ -226,7 +253,7 @@ void Client::sessionMenu()
             case 1: viewSession(); break;
             case 2: bookSession(); break;
             case 0: displayMenu(); break;
-            default: cout << "\n\nERROR: Invalid Choice\n";
+            default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         }
     }
     while(choice != 2);
@@ -240,6 +267,19 @@ void Client::editProfile()
 
     do
     {
+                line();
+        cout << "           ACCOUNT DETAILS\n";
+        line();
+
+        cout << "  Member ID:     " << id << endl;
+        cout << "  Name:          " << name << endl;
+        cout << "  Password:      " << password << endl;
+        cout << "  Email Address: " << email << endl;
+        cout << "  Phone Number:  0" << phone << endl;
+        cout << "  Date Of Birth: " << dobDay << "/" << dobMonth << "/" << dobYear << endl;
+        cout << "  Height:        " << height << "cm" << endl;
+        cout << "  Weight:        " << weight << "kg" << endl;
+
         line();
         cout << "           EDIT PROFILE" << endl;
         line();
@@ -255,8 +295,6 @@ void Client::editProfile()
 
         cout << "  Choice: ";
         cin >> choice;   
-        
-        clearScreen();
 
         switch(choice)
         {
@@ -307,67 +345,99 @@ void Client::editProfile()
             case 6: 
             {   
                 cout << "\nReturning to Profile Menu...\n";
+                clearScreen();
                 break;
             }
-            case 0: displayMenu(); break;
-            default:
-                cout << "\n\nERROR: Invalid Choice\n";
+            case 0: 
+            {
+                clearScreen();
+                displayMenu();  
+                break;
+            }
+
+            default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         } 
 
-    } while (choice != 6);
+    } 
+    while (choice != 6);
 }
 
 
+// Renew Membership
+void Client::renewMembership()
+{
+}
+
+
+// Upgrade Membership
+void Client::upgradeMembership()
+{
+}
+
+
+// View Progress
+void Client::viewProgress()
+{
+}
+
+
+// Edit Progress
+void Client::editProgress()
+{
+}
+
+
+// Display Workouts
 void Client::displayWorkout()
 {
 
 }
 
 
+// Edit Workouts
 void Client::editWorkout()
 {
 }
 
 
+// Log Workouts
 void Client::logWorkout()
 {
 }
 
 
+// View Sessions
 void Client::viewSession()
 {
+    int choice;
+    bookedSession.displaySession();
+    cout << "  0) Return to Menu" << endl;
+    cout << "  Choice: ";
+    do
+    {   
+    cin >> choice;
+        switch(choice)
+        {
+        case 0: displayMenu(); break;
+        } 
+    }   
+    while (choice != 0);
+    
+    clearScreen();
 }
 
 
+// Book Sessions
 void Client::bookSession()
 {
-}
-
-
-void Client::viewProgress()
-{
-}
-
-
-void Client::editProgress()
-{
-}
-
-
-void Client::renewMembership()
-{
-}
-
-
-void Client::upgradeMembership()
-{
+    bookedSession.bookSession();
 }
 
 
 // UI
 void Client::clearScreen() 
 { 
-    for(int i=0;i<40;i++) 
+    for(int i = 0; i < 40; i++) 
     cout << endl; 
 }
 
