@@ -2,15 +2,14 @@
 #define CLIENT_H
 
 #include "User.h"
-
-#include <iostream>
-using namespace std;
+#include "Session.h"
 
 class Client : public User{
     private:
         double height, weight;
         string membershipType, goal;
         int expiryDay, expiryMonth, expiryYear;
+        Session bookedSession;
 
     public:
         // Constructors & Destructors
@@ -25,12 +24,7 @@ class Client : public User{
         double getWeight(){return weight;}
         string getMembershipType(){return membershipType;}
         string getGoal(){return goal;}
-        void getExpiryDate(int &ed, int &em, int &ey)
-        {
-                ed = expiryDay;
-                em = expiryMonth;
-                ey = expiryYear;
-        }
+        void getExpiryDate(int &ed, int &em, int &ey){ed = expiryDay; em = expiryMonth; ey = expiryYear;}
 
 
         // Setters
@@ -42,7 +36,8 @@ class Client : public User{
 
 
         // Functions
-
+        void registerAccount() override;
+        
         // Menus
         void displayMenu() override;
         void workoutMenu();
@@ -54,6 +49,14 @@ class Client : public User{
         void displayDetails() override;
         void editProfile();
 
+        // Membership
+        void renewMembership();
+        void upgradeMembership();
+
+        // Progress
+        void viewProgress();
+        void editProgress();
+
         // Workouts
         void displayWorkout();
         void editWorkout();
@@ -62,14 +65,6 @@ class Client : public User{
         //Sessions
         void viewSession();
         void bookSession();
-
-        // Progress
-        void viewProgress();
-        void editProgress();
-
-        // Membership
-        void renewMembership();
-        void upgradeMembership();
 
         // UI
         void clearScreen();
