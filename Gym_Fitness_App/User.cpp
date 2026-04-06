@@ -120,7 +120,7 @@ bool User::getValidDate(int& d, int& m, int& y) {
         cin >> y;
 
         // Basic Checks
-        if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > 2026) {
+        if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900) {
             cout << "\n-ERROR: Invalid date.-\n";
             cout << "\nEnter a Valid Date" << endl;
             continue;
