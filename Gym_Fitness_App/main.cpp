@@ -13,6 +13,32 @@ int x;
 
 int main()
 {
+
+//Testing Goal Class 
+//Goal benchPR("Bench 100kg", "Strength", 100, "1st of January 2027"); 
+    Goal benchPR; 
+    Goal(); 
+    benchPR.startingPoint();
+    benchPR.setType();
+    
+    cin.get(); 
+    benchPR.checkProgress(); 
+    cin.get(); 
+    benchPR.updateProgress(); 
+    cin.get(); 
+    benchPR.checkProgress(); 
+
+    benchPR.updateDeadline();
+    cin.get();
+    benchPR.displayDetails(); 
+
+    cout << endl;
+
+    // Cardio sub20("Run a sub 20min 5k", "Cardio", 20, "31st of December 2026"); 
+    // sub20.checkProgress(20);
+    // sub20.displayDetails();
+
+    
 //Testing User
     cout << "---Testing User Constructor---" << endl;
     User u1(1, "name1", "user1@email.com", 891, 30 , 03, 2026, "pass1");
