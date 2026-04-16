@@ -6,6 +6,8 @@
 #include "WorkoutPlan.h"
 #include "Exercise.h"
 #include "WorkoutExercise.h"
+#include "Goal.h"
+#include "Cardio.h"
 
 using namespace std; 
 
@@ -13,31 +15,50 @@ int x;
 
 int main()
 {
-
-//Testing Goal Class 
-//Goal benchPR("Bench 100kg", "Strength", 100, "1st of January 2027"); 
-    Goal benchPR; 
-    Goal(); 
-    benchPR.startingPoint();
-    benchPR.setType();
+cout << "=== FITNESS GOAL TRACKER ===\n\n";
     
-    cin.get(); 
-    benchPR.checkProgress(); 
-    cin.get(); 
-    benchPR.updateProgress(); 
-    cin.get(); 
-    benchPR.checkProgress(); 
-
-    benchPR.updateDeadline();
+    int choice;
+    cout << "Select goal type:\n";
+    cout << "1. Strength Goal (kg-based)\n";
+    cout << "2. Cardio Goal (distance & pace-based)\n";
+    cout << "Enter choice: ";
+    cin >> choice;
+    cin.ignore();
+    
+    if (choice == 1) {
+        Goal strengthGoal;
+        strengthGoal.startingPoint();
+        strengthGoal.setType();
+        
+        strengthGoal.updateProgress();
+        strengthGoal.checkProgress();
+        
+        cout << "\n--- Updating strength progress again ---\n";
+        strengthGoal.updateProgress();
+        strengthGoal.checkProgress();
+        
+        strengthGoal.displayDetails();
+    }
+    else if (choice == 2) {
+        Cardio cardioGoal;
+        cardioGoal.startingPoint();
+        
+        cardioGoal.updateProgress();
+        cardioGoal.checkProgress();
+        
+        cout << "\n--- Updating cardio progress again ---\n";
+        cardioGoal.updateProgress();
+        cardioGoal.checkProgress();
+        
+        cardioGoal.displayDetails();
+    }
+    else {
+        cout << "Invalid choice. Exiting program.\n";
+    }
+    
+    cout << "\nProgram completed successfully.\n";
     cin.get();
-    benchPR.displayDetails(); 
-
-    cout << endl;
-
-    // Cardio sub20("Run a sub 20min 5k", "Cardio", 20, "31st of December 2026"); 
-    // sub20.checkProgress(20);
-    // sub20.displayDetails();
-
+    return 0;
     
 //Testing User
     cout << "---Testing User Constructor---" << endl;
