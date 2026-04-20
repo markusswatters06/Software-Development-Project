@@ -3,6 +3,7 @@
 #include <string>
 #include <cctype>
 #include <stdexcept>
+
 using namespace std;
 
 #ifndef _GOAL_
@@ -27,13 +28,16 @@ class Goal
 
     public: 
     Goal(); 
+    Goal(double currentPR, int days, int months, int years, char timePeriod, double percentage, string goal, string type, double target, string deadline, double newPR, double improvement, string status);
     virtual ~Goal() {}
+
 
     virtual void checkProgress();
     virtual void updateStatus();
     virtual void updateProgress(); 
-    virtual void startingPoint();
-    virtual void displayDetails(); 
+    virtual void addGoal();
+    virtual void editGoal();
+    virtual void displayGoal(); 
     virtual void updateDeadline();
     void setType(); 
     
@@ -64,6 +68,10 @@ class Goal
     void setStatus(string s) { status = s; }
     void setCurrentPR(double pr) { currentPR = pr; }
     void setNewPR(double pr) { newPR = pr; }
+
+    // UI
+    void clearScreen();
+    void line() const;
 };
 
 #endif
