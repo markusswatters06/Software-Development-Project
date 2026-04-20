@@ -74,7 +74,7 @@ void Client::displayMenu()
         switch(choice) {
             case 1: displayDetails(); break;
             case 2: membershipMenu(); break;
-            case 3: progressMenu(); break;
+            case 3: goalMenu(); break;
             case 4: workoutMenu(); break;
             case 5: sessionMenu(); break;
             case 0: displayMenu(); break;
@@ -140,8 +140,8 @@ void Client::membershipMenu()
         cout << " Expiry:  " << expiryDay << "/" << expiryMonth << "/" << expiryYear << endl;
 
         line();
-        cout << "  1) Renew Membership" << endl;
-        cout << "  2) Upgrade Membership" << endl;
+        cout << "  1) Renew Membership (LOCKED)" << endl;
+        cout << "  2) Upgrade Membership (LOCKED)" << endl;
         cout << "  0) Return to Client Menu" << endl;
         line();
 
@@ -162,35 +162,63 @@ void Client::membershipMenu()
 }
 
 
-// Progress Menu
-void Client::progressMenu()
+// Goal Menu
+void Client::goalMenu()
 {
     int choice;
-    line();
-    cout << "           PROGRESS MENU" << endl;
-    line();
-
     do
     {
-        cout << "  1) View Progress" << endl;
-        cout << "  2) Edit Progress" << endl;
+        clearScreen();
+        line();
+        cout << "           GOAL MENU" << endl;
+        line();
+
+        cout << "  1) New Goal" << endl;
+        cout << "  2) View Goals" << endl;
+        cout << "  3) Remove Goal (LOCKED)" << endl;
+        cout << "  4) View Progress (LOCKED)" << endl;
         cout << "  0) Return to Client Menu" << endl;
         line();
 
         cout << "  Choice: ";
         cin >> choice;
 
-        clearScreen();
-
         switch(choice)
         {
-            case 1: viewProgress(); break;
-            case 2: editProgress(); break;
-            case 0: displayMenu(); break;
-            default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
+            case 1:
+                clearScreen();
+                addGoal();
+                currentGoal.setType();
+                currentGoal.updateDeadline();
+                currentGoal.updateStatus();
+                break;
+
+            case 2:
+                clearScreen();
+                displayGoal();
+                break;
+
+            case 3:
+                cout << "\nRemove Goal is currently locked.\n";
+                cin.get();
+                break;
+
+            case 4:
+                clearScreen();
+                checkProgress();
+                break;
+
+            case 0:
+            clearScreen();
+            displayMenu();
+                break;
+
+            default:
+                cout << "\n*ERROR: Invalid Choice*\n";
+                cin.get();
         }
-    }
-    while(choice != 2);
+
+    } while(choice != 0);
 }
 
 
@@ -204,9 +232,9 @@ void Client::workoutMenu()
 
     do
     {
-        cout << "  1) Log Workout" << endl;
-        cout << "  2) View Workouts" << endl;
-        cout << "  3) Edit Workouts" << endl;
+        cout << "  1) Log Workout (LOCKED)" << endl;
+        cout << "  2) View Workouts (LOCKED)" << endl;
+        cout << "  3) Edit Workouts (LOCKED)" << endl;
         cout << "  0) Return to Client Menu" << endl;
         line();
 
@@ -375,17 +403,6 @@ void Client::upgradeMembership()
 }
 
 
-// View Progress
-void Client::viewProgress()
-{
-}
-
-
-// Edit Progress
-void Client::editProgress()
-{
-}
-
 
 // Display Workouts
 void Client::displayWorkout()
@@ -433,6 +450,25 @@ void Client::bookSession()
     bookedSession.bookSession();
 }
 
+void Client::displayGoal()
+{
+    currentGoal.displayGoal();
+}
+
+void Client::updateProgress()
+{
+    currentGoal.updateProgress();
+}
+
+void Client::checkProgress()
+{
+    currentGoal.checkProgress();
+}
+
+void Client::addGoal()
+{
+    currentGoal.addGoal();
+}
 
 // UI
 void Client::clearScreen() 
