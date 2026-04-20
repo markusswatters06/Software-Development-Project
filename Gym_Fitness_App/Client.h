@@ -3,6 +3,7 @@
 
 #include "User.h"
 #include "Session.h"
+#include "Goal.h"
 
 class Client : public User{
     private:
@@ -10,6 +11,7 @@ class Client : public User{
         string membershipType, goal;
         int expiryDay, expiryMonth, expiryYear;
         Session bookedSession;
+        Goal currentGoal;
 
     public:
         // Constructors & Destructors
@@ -43,7 +45,7 @@ class Client : public User{
         void workoutMenu();
         void sessionMenu();
         void membershipMenu();
-        void progressMenu();
+        void goalMenu();
 
         // Profile
         void displayDetails() override;
@@ -53,18 +55,21 @@ class Client : public User{
         void renewMembership();
         void upgradeMembership();
 
-        // Progress
-        void viewProgress();
-        void editProgress();
-
         // Workouts
         void displayWorkout();
         void editWorkout();
         void logWorkout();
 
+        // Goals
+        void addGoal();
+        void displayGoal();
+        void updateProgress();
+        void checkProgress();
+
         //Sessions
         void viewSession();
         void bookSession();
+
 
         // UI
         void clearScreen();
