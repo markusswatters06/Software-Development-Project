@@ -4,6 +4,11 @@
 Goal::Goal() : currentPR(0), days(0), months(0), years(0), timePeriod(' '), 
                percentage(0), target(0), newPR(0), improvement(0), status("Not Started")
 {}
+Goal::Goal(double currentPR, int days, int months, int years, char timePeriod, double percentage, string goal, string type, double target, string deadline, double newPR, double improvement, string status)
+    : currentPR(currentPR), days(days), months(months), years(years), timePeriod(timePeriod), 
+      percentage(percentage), goal(goal), type(type), target(target), deadline(deadline), 
+      newPR(newPR), improvement(improvement), status(status)
+{}
 
 void Goal::clearInputStream() {
     cin.clear();
@@ -102,34 +107,39 @@ bool Goal::isValidExercise(const string& exercise) {
     return false;
 }
 
-void Goal::startingPoint(){
-    cout << "\n=== NEW STRENGTH GOAL SETUP ===\n";
+void Goal::addGoal(){
+    int choice;
+    clearInputStream();
+    clearScreen();
+    line();
+    cout << "           NEW STRENGTH GOAL\n";
+    line();
     
     while (true) {
-        cout << "Exercise you would like to improve upon: ";
+        cout << "Exercise Name: ";
         getline(cin, goal);
         
         if (goal.empty()) {
-            cout << "Error: Exercise name cannot be empty.\n";
+            cout << "\n\nERROR: Exercise name cannot be empty.\n\n";
         }
         else {
             break;
         }
     }
     
-    currentPR = getValidPositiveDouble("Current personal best [kg]: ");
+    currentPR = getValidPositiveDouble("Current Personal best [kg]: ");
     
     while (true) {
-        target = getValidPositiveDouble("Final target to reach [kg]: ");
+        target = getValidPositiveDouble("Target [kg]: ");
         if (target <= currentPR) {
-            cout << "Error: Target must be greater than current PR (" << currentPR << " kg).\n";
+            cout << "\n\nERROR: Target must be greater than current PR (" << currentPR << " kg).\n\n";
         }
         else {
             break;
         }
     }
     
-    cout << "\nTime period to accomplish this goal:\n";
+    cout << "Time to Accomplish:\n";
     timePeriod = getValidCharInput("[D] Day(s)  [M] Month(s)  [Y] Year(s): ", "DMY");
     
     switch(timePeriod){
@@ -155,21 +165,158 @@ void Goal::startingPoint(){
                 deadline = to_string(years) + " years";
             break;
     }
-    
-    cout << "\n=== SUMMARY ===\n";
-    cout << "Goal: improve " << goal << "\n";
+
+    clearScreen();
+    line();
+    cout << "           GOAL CREATED\n";
+    line();
+
+    cout << "Goal: Improve " << goal << "\n";
     cout << "Current: " << currentPR << " kg\n";
     cout << "Target: " << target << " kg\n";
     cout << "Deadline: " << deadline << "\n";
     cout << "Type: Strength (kg-based)\n";
-    cout << "===============\n\n";
-    cout << "Press Enter to continue...";
-    cin.get();
+
+    line();
+    cout << "  1) Edit Goal" <<endl;
+    cout << "  0) Return to Menu" << endl;
+    cout << "  Choice: ";
+    cin >> choice;
+
+    switch(choice)
+    {
+        case 1: editGoal(); break;
+        case 0: break;
+    }
+}
+
+void Goal::editGoal()
+{
+    int choice;
+
+    clearScreen();
+    do
+    {
+    line();
+    cout << "           GOAL DETAILS\n";
+    line();
+    cout << "Goal: " << goal << "\n";
+    cout << "Type: " << type << "\n";
+    cout << "Starting PR: " << currentPR << " kg\n";
+    cout << "Target: " << target << " kg\n";
+    cout << "Latest PR: ";
+    if (newPR > 0)
+        cout << newPR << " kg\n";
+    else
+        cout << "Not recorded\n";
+    cout << "Deadline: " << deadline << endl;
+    cout << "Progress: +" << improvement << " kg (" << percentage << "%)\n";
+    cout << "Status: " << status << "\n";
+    line();
+    
+        cout << "           EDIT GOAL" << endl;
+        line();
+
+        cout << "  1) Goal" << endl;
+        cout << "  2) Type" << endl;
+        cout << "  3) Starting PR" << endl;
+        cout << "  4) Target" << endl;
+        cout << "  5) Latest PR" << endl;
+        cout << "  6) Deadline" << endl;
+        cout << "  0) Return to Goal Menu" << endl;
+        line();
+
+        cout << "  Choice: ";
+        cin >> choice;   
+
+        switch(choice)
+        {
+            case 1: 
+            {
+                string g;
+                cout << "\nEnter a New Goal: ";
+                cin >> g;
+                setGoal(g);
+                clearScreen();
+                break;
+            }
+            case 2: 
+            {
+                string t;
+                cout << "\nEnter a New Type: ";
+                cin >> t;
+                setType(t);
+                clearScreen();
+                break;
+            }
+            case 3: 
+            {
+                double pr;
+                cout << "\nEnter a New Starting PR [kg]: ";
+                cin >> pr;
+                setCurrentPR(pr);
+                clearScreen();
+                break;
+            }
+            case 4: 
+            {
+                double t;
+                cout << "\nEnter a New Target [kg]: ";
+                cin >> t;
+                setTarget(t);
+                clearScreen();
+                break;
+            }
+            case 5: 
+            {
+                double pr;
+                cout << "\nEnter a New Latest PR [kg]: ";
+                cin >> pr;
+                setNewPR(pr);
+                clearScreen();
+                break;
+            }
+            case 6: 
+            {
+                cout << "\nEnter a New Deadline\n";
+            
+
+                timePeriod = getValidCharInput("[D] Day(s)  [M] Month(s)  [Y] Year(s): ", "DMY");
+
+                days = 0;
+                months = 0;
+                years = 0;
+
+        switch(timePeriod)
+        {
+            case 'D':
+            days = getValidPositiveInt("Enter number of day(s): ");
+            break;
+
+            case 'M':
+            months = getValidPositiveInt("Enter number of month(s): ");
+            break;
+
+            case 'Y':
+            years = getValidPositiveInt("Enter number of year(s): ");
+            break;
+    }
+
+    updateDeadline();
+    clearScreen();
+    break;
+    }
+            case 0: break;
+            default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
+        } 
+
+    } 
+    while (choice != 6);
 }
 
 void Goal::updateProgress(){
     cout << "\n=== UPDATE PROGRESS ===\n";
-    newPR = getValidPositiveDouble("Enter new personal best [kg]: ");
+    newPR = getValidPositiveDouble("Enter New Personal Best [kg]: ");
     
     if (newPR <= currentPR) {
         cout << "Note: New PR (" << newPR << " kg) is not better than current PR (" 
@@ -177,7 +324,7 @@ void Goal::updateProgress(){
     } else {
         cout << "Progress updated successfully!\n";
     }
-    cout << "Press Enter to continue...";
+    cout << "Press Enter to Return to Goal Menu...";
     cin.get();
 }
 
@@ -210,39 +357,47 @@ void Goal::checkProgress(){
         improvement = 0;
         percentage = 0;
     }
-    
-    cout << "\n=== PROGRESS CHECK ===\n";
+    line();
+    cout << "           PROGRESS CHECK\n";
+    line();
     
     if (percentage >= 100) {
-        cout << "✓ GOAL ACHIEVED! Congratulations!\n";
+        cout << "GOAL ACHIEVED! Congratulations!\n";
+        line();
     }
     else if (percentage >= 90){
-        cout << "✓ Nearly there! Keep up the great work!\n";
+        cout << "Nearly there! Keep up the great work!\n";
         cout << "  Improved by: " << improvement << " kg (" << percentage << "% toward goal)\n";
+        line();
     }
     else if (percentage >= 75){
-        cout << "✓ Excellent progress!\n";
+        cout << "Excellent progress!\n";
         cout << "  Improved by: " << improvement << " kg (" << percentage << "%)\n";
+        line();
     }
     else if (percentage >= 50){
-        cout << "✓ Good progress!\n";
+        cout << "Good progress!\n";
         cout << "  Improved by: " << improvement << " kg (" << percentage << "%)\n";
+        line();
     }
     else if (percentage >= 25){
-        cout << "✓ Making progress!\n";
+        cout << "Making progress!\n";
         cout << "  Improved by: " << improvement << " kg (" << percentage << "%)\n";
+        line();
     }
     else if (percentage > 0){
-        cout << "✓ Just getting started!\n";
+        cout << "Just getting started!\n";
         cout << "  Improved by: " << improvement << " kg (" << percentage << "%)\n";
+        line();
     }
     else {
-        cout << "⚠ No improvement yet. Don't give up!\n";
+        cout << "No improvement yet. Don't give up!\n";
+        line();
     }
     
     updateStatus();
     cout << "Status: " << status << "\n";
-    cout << "=====================\n";
+    line();
     cout << "Press Enter to continue...";
     cin.get();
 }
@@ -280,8 +435,11 @@ void Goal::updateDeadline(){
     }
 }
 
-void Goal::displayDetails(){
-    cout << "\n=== STRENGTH GOAL DETAILS ===\n";
+void Goal::displayGoal(){
+    int choice;
+    line();
+    cout << "           GOAL DETAILS\n";
+    line();
     cout << "Goal: " << goal << "\n";
     cout << "Type: " << type << "\n";
     cout << "Starting PR: " << currentPR << " kg\n";
@@ -294,5 +452,32 @@ void Goal::displayDetails(){
     cout << "Deadline: " << deadline << "\n";
     cout << "Progress: +" << improvement << " kg (" << percentage << "%)\n";
     cout << "Status: " << status << "\n";
-    cout << "===========================\n";
+    line();
+    cout << "  1) Edit Goal\n";
+    cout << "  2) Update Progress\n";
+    cout << "  3) Remove Goal\n";
+    cout << "  0) Return to Goal Menu\n";
+    cout << "  Choice: ";
+    cin >> choice;
+    switch(choice)
+    {
+        case 1: editGoal(); break;
+        case 2: updateProgress(); break;
+        case 3: break;
+        case 4: break;
+        case 0: break;
+        default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
+    }
+}
+
+
+// UI
+void Goal::clearScreen() {
+    for (int i = 0; i < 40; i++) {
+        cout << endl;
+    }
+}
+
+void Goal::line() const {
+    cout << "========================================\n";
 }
