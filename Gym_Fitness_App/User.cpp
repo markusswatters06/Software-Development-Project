@@ -1,5 +1,6 @@
 #include "User.h"
 
+int User::nextUserId = 1;
 
 User::User()
     : id(0), name("N/A"), email("N/A"), phone(0), dobDay(0), dobMonth(0), dobYear(0), password("N/A"){}
@@ -54,7 +55,7 @@ void User::displayDetails()
 // Sign Up
 void User::registerAccount()
 {
-    int i, ph, dd, dm, dy;
+    int ph, dd, dm, dy;
     string n, e, p;
 
     cout << "\nEnter Name: ";
@@ -69,13 +70,10 @@ void User::registerAccount()
     cout << "Enter Date of Birth\n";
     getValidDate(dd, dm, dy);
 
-    cout << "\nEnter ID: ";
-    cin >> i;
-
     cout << "\nEnter Password: "; 
     cin >> p;
     
-    setId(i);
+    setId(nextUserId++);
     setName(n);
     setEmail(e);
     setPhone(ph);
@@ -85,6 +83,7 @@ void User::registerAccount()
     setPassword(p);
 
     cout << "\nSignup Successful!" << endl;
+    cout << "Your ID is: " << id << endl;
 }
 
 
