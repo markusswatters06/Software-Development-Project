@@ -1,8 +1,13 @@
 #ifndef TRAINER_H
 #define TRAINER_H
 
+#include <vector>
+#include <stdexcept>
+
 #include "User.h"
 #include "Session.h"
+
+class Client;
 
 class Trainer : public User{
     private:
@@ -15,12 +20,21 @@ class Trainer : public User{
         double sessionRate;     // Session Rate (€)
         string availablility;   // Session Availabilty
         Session trainerSession; //
+        vector<Client*> ownedClients;
+        vector<Client*> assignedClients;
+        bool isClientAssigned(int clientId) const;
+        void printAvailableClientsTable() const;
 
     public:
         // Constructors & Destructor
         Trainer();
         Trainer(string b, string c, double r, int ye, int cl, int spw, double sr, string a);
         ~Trainer();
+
+        // Operator Overloading
+        Trainer& operator+=(Client& client);
+        bool operator==(const Trainer& other) const;
+        friend ostream& operator<<(ostream& os, const Trainer& trainer);
 
         // Getters
         string getBio(){return bio;}
@@ -33,14 +47,14 @@ class Trainer : public User{
         string getAvailability(){return availablility;}
 
         // Setters
-        void setBio(string b){b = bio;}
-        void setCert(string c){c = cert;}
-        void setRating(double r){r = rating;}
-        void setYearsExp(int ye){ye = yearsExp;}
-        void setClients(int cl){cl = clients;}
-        void setSessionsPerWeek(int swp){swp = sessionsPerWeek;}
-        void setSessionRate(double sr){sr = sessionRate;}
-        void setAvailability(string a){a = availablility;}
+        void setBio(string b){bio = b;}
+        void setCert(string c){cert = c;}
+        void setRating(double r){rating = r;}
+        void setYearsExp(int ye){yearsExp = ye;}
+        void setClients(int cl){clients = cl;}
+        void setSessionsPerWeek(int swp){sessionsPerWeek = swp;}
+        void setSessionRate(double sr){sessionRate = sr;}
+        void setAvailability(string a){availablility = a;}
 
 
         // Functions
@@ -57,14 +71,23 @@ class Trainer : public User{
         // Profile
         void editProfile();
 
+        // Clients
+        void displayClients();
+        void addAvailableClient(const Client& client);
+        void assignClients();
+        void assignClients(Client& client);
+        void displayAssignedClients() const;
+        void removeClients();
+
         // Session
         void createSession();
         void displaySession();
         void editSession();
+        void removeSession();
         
 
         // UI
         void clearScreen();
-        void line();
+        void line() const;
 };
 #endif
