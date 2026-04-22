@@ -2,10 +2,12 @@
 #define USER_H
 
 #include <iostream>
+#include <stdexcept>
 using namespace std;
 
 class User {
     protected:
+        static int nextUserId;
         int id;
         string name;
         string email;
