@@ -13,52 +13,128 @@ using namespace std;
 
 int x;
 
+void displayGoalList(const vector<Goal*>& goals) {
+    if (goals.empty()) {
+        cout << "\nNo goals yet. Add one first!\n";
+        return;
+    }
+    cout << "\n=== YOUR GOALS ===\n";
+    for (size_t i = 0; i < goals.size(); ++i) {
+        cout << i+1 << ". " << goals[i]->getSummary() << "\n";
+    }
+    cout << "==================\n";
+}
+
+// Helper to get a valid integer from the user
+int getValidInt(const string& prompt) {
+    int value;
+    while (true) {
+        cout << prompt;
+        cin >> value;
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Please enter a number.\n";
+        } else {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return value;
+        }
+    }
+}
+
 int main()
 {
-cout << "=== FITNESS GOAL TRACKER ===\n\n";
-    
+    // Goal Classes
+    vector<Goal*> goals;
     int choice;
-    cout << "Select goal type:\n";
-    cout << "1. Strength Goal (kg-based)\n";
-    cout << "2. Cardio Goal (distance & pace-based)\n";
-    cout << "Enter choice: ";
-    cin >> choice;
-    cin.ignore();
-    
-    if (choice == 1) {
-        Goal strengthGoal;
-        strengthGoal.startingPoint();
-        strengthGoal.setType();
+    bool running = true;
+
+    while (running) {
+        cout << "\n=== FITNESS GOAL TRACKER ===\n";
+        cout << "1. Add New Goal\n";
+        cout << "2. View All Goals\n";
+        cout << "3. Manage a Goal\n";
+        cout << "4. Delete a Goal\n";
+        cout << "0. Exit\n";
         
-        strengthGoal.updateProgress();
-        strengthGoal.checkProgress();
-        
-        cout << "\n--- Updating strength progress again ---\n";
-        strengthGoal.updateProgress();
-        strengthGoal.checkProgress();
-        
-        strengthGoal.displayDetails();
+        choice = getValidInt("Enter choice: ");
+
+        switch (choice) {
+            case 1: {
+                int type;
+                cout << "\nSelect goal type:\n";
+                cout << "1. Strength\n2. Cardio\n3. Weight Loss\n";
+                type = getValidInt("Choice: ");
+
+                Goal* newGoal = nullptr;
+                if (type == 1)
+                    newGoal = new Goal();
+                else if (type == 2)
+                    newGoal = new Cardio();
+                else if (type == 3)
+                    newGoal = new WeightLoss();
+                else {
+                    cout << "Invalid type. Please choose 1, 2, or 3.\n";
+                    break;
+                }
+
+                newGoal->addGoal();
+                goals.push_back(newGoal);
+                cout << "Goal added!\n";
+                break;
+            }
+
+            case 2:
+                displayGoalList(goals);
+                break;
+
+            case 3: {
+                if (goals.empty()) {
+                    cout << "No goals to manage.\n";
+                    break;
+                }
+                displayGoalList(goals);
+                int idx = getValidInt("Enter goal number to manage: ");
+                if (idx < 1 || idx > (int)goals.size()) {
+                    cout << "Invalid number. Must be between 1 and " << goals.size() << ".\n";
+                    break;
+                }
+                goals[idx - 1]->displayGoal();
+                break;
+            }
+
+            case 4: {
+                if (goals.empty()) {
+                    cout << "No goals to delete.\n";
+                    break;
+                }
+                displayGoalList(goals);
+                int idx = getValidInt("Enter goal number to delete: ");
+                if (idx < 1 || idx > (int)goals.size()) {
+                    cout << "Invalid number. Must be between 1 and " << goals.size() << ".\n";
+                    break;
+                }
+                delete goals[idx - 1];
+                goals.erase(goals.begin() + (idx - 1));
+                cout << "Goal deleted.\n";
+                break;
+            }
+
+            case 0:
+                running = false;
+                break;
+
+            default:
+                cout << "Invalid choice. Please enter a number from 0 to 4.\n";
+        }
     }
-    else if (choice == 2) {
-        Cardio cardioGoal;
-        cardioGoal.startingPoint();
-        
-        cardioGoal.updateProgress();
-        cardioGoal.checkProgress();
-        
-        cout << "\n--- Updating cardio progress again ---\n";
-        cardioGoal.updateProgress();
-        cardioGoal.checkProgress();
-        
-        cardioGoal.displayDetails();
-    }
-    else {
-        cout << "Invalid choice. Exiting program.\n";
-    }
-    
-    cout << "\nProgram completed successfully.\n";
-    cin.get();
+
+    // Clean up all remaining goals
+    for (size_t i = 0; i < goals.size(); ++i)
+        delete goals[i];
+
     return 0;
+
     
 //Testing User
     cout << "---Testing User Constructor---" << endl;
