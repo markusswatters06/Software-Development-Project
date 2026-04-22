@@ -3,6 +3,7 @@
 #include <string>
 #include <cctype>
 #include <stdexcept>
+#include <sstream>
 
 using namespace std;
 
@@ -17,16 +18,18 @@ class Goal
     int months; 
     int years; 
     char timePeriod; 
-    double percentage;
+    
     string goal; 
     string type; 
     double target; 
     string deadline; 
     double newPR;
-    double improvement;
+    
     string status; 
 
     public: 
+    double improvement;
+    double percentage;
     Goal(); 
     Goal(double currentPR, int days, int months, int years, char timePeriod, double percentage, string goal, string type, double target, string deadline, double newPR, double improvement, string status);
     virtual ~Goal() {}
@@ -39,7 +42,6 @@ class Goal
     virtual void editGoal();
     virtual void displayGoal(); 
     virtual void updateDeadline();
-    void setType(); 
     
     bool isValidExercise(const string& exercise);
     
@@ -59,7 +61,9 @@ class Goal
     double getNewPR() const { return newPR; }
     double getImprovement() const { return improvement; }
     double getPercentage() const { return percentage; }
-    
+    string setType(); 
+    virtual string getSummary() const;
+
     // Setters
     void setGoal(string g) { goal = g; }
     void setType(string t) { type = t; }

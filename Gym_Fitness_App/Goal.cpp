@@ -1,9 +1,11 @@
 #include "Goal.h"
 #include <algorithm>
 
-Goal::Goal() : currentPR(0), days(0), months(0), years(0), timePeriod(' '), 
+Goal::Goal() : currentPR(0), days(0), months(0), years(0), timePeriod(), 
                percentage(0), target(0), newPR(0), improvement(0), status("Not Started")
-{}
+{
+    setType("Strength");
+}
 Goal::Goal(double currentPR, int days, int months, int years, char timePeriod, double percentage, string goal, string type, double target, string deadline, double newPR, double improvement, string status)
     : currentPR(currentPR), days(days), months(months), years(years), timePeriod(timePeriod), 
       percentage(percentage), goal(goal), type(type), target(target), deadline(deadline), 
@@ -109,6 +111,7 @@ bool Goal::isValidExercise(const string& exercise) {
 
 void Goal::addGoal(){
     int choice;
+    type = "Strength";
     clearInputStream();
     clearScreen();
     line();
@@ -314,21 +317,25 @@ void Goal::editGoal()
     while (choice != 6);
 }
 
-void Goal::updateProgress(){
+void Goal::updateProgress() {
     cout << "\n=== UPDATE PROGRESS ===\n";
-    newPR = getValidPositiveDouble("Enter New Personal Best [kg]: ");
-    
-    if (newPR <= currentPR) {
-        cout << "Note: New PR (" << newPR << " kg) is not better than current PR (" 
-             << currentPR << " kg). No progress recorded.\n";
-    } else {
-        cout << "Progress updated successfully!\n";
+    double newVal;
+    while (true) {
+        newVal = getValidPositiveDouble("Enter New Personal Best [kg]: ");
+        if (newVal <= currentPR) {
+            cout << "Error: New PR must be greater than current PR (" 
+                 << currentPR << " kg). Please try again.\n";
+        } else {
+            break;
+        }
     }
+    newPR = newVal;
+    cout << "Progress updated successfully!\n";
     cout << "Press Enter to Return to Goal Menu...";
     cin.get();
 }
 
-void Goal::setType(){
+string Goal::setType(){
     if (isValidExercise(goal)) {
         type = "Cardio";
     } else {
@@ -480,4 +487,10 @@ void Goal::clearScreen() {
 
 void Goal::line() const {
     cout << "========================================\n";
+}
+
+string Goal::getSummary() const {
+    ostringstream ss;
+    ss << goal << " (" << type << ") - " << status << " (" << percentage << "%)";
+    return ss.str();
 }
