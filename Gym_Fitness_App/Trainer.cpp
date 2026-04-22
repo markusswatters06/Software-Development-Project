@@ -1,4 +1,6 @@
 #include "Trainer.h"
+#include "Client.h"
+#include <limits>
 
 Trainer::Trainer()
     : bio("N/A"), cert("N/A"), rating(0.0), yearsExp(0), clients(0), sessionsPerWeek(0), sessionRate(0.0), availablility("N/A")
@@ -9,41 +11,164 @@ Trainer::Trainer(string b, string c, double r, int ye, int cl, int spw, double s
 {}
 
 Trainer::~Trainer()
-{}
+{
+    for (int i = 0; i < ownedClients.size(); i++)
+    {
+        delete ownedClients[i];
+    }
+}
+
+bool Trainer::isClientAssigned(int clientId) const
+{
+    for (int i = 0; i < static_cast<int>(assignedClients.size()); i++)
+    {
+        if (assignedClients[i] != nullptr && assignedClients[i]->getId() == clientId)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Trainer::printAvailableClientsTable() const
+{
+    cout << "==========================================================================\n";
+    cout << "                            AVAILABLE CLIENTS\n";
+    cout << "==========================================================================\n";
+
+    bool hasAvailableClients = false;
+
+    for (int i = 0; i < static_cast<int>(ownedClients.size()); i++)
+    {
+        if (ownedClients[i] != nullptr && !isClientAssigned(ownedClients[i]->getId()))
+        {
+            hasAvailableClients = true;
+            break;
+        }
+    }
+
+    if (!hasAvailableClients)
+    {
+        cout << " No available clients.\n";
+    }
+    else
+    {
+        cout << " ID | Name                 | Membership      | Goal\n";
+        cout << "--------------------------------------------------------------------------\n";
+
+        for (int i = 0; i < static_cast<int>(ownedClients.size()); i++)
+        {
+            if (ownedClients[i] != nullptr && !isClientAssigned(ownedClients[i]->getId()))
+            {
+                Client* client = ownedClients[i];
+
+                if (client->getId() < 10) cout << "  ";
+                else if (client->getId() < 100) cout << ' ';
+                cout << client->getId() << " | ";
+
+                cout << client->getName();
+                for (int j = static_cast<int>(client->getName().length()); j < 20; j++)
+                {
+                    cout << ' ';
+                }
+                cout << "| ";
+
+                cout << client->getMembershipType();
+                for (int j = static_cast<int>(client->getMembershipType().length()); j < 15; j++)
+                {
+                    cout << ' ';
+                }
+                cout << "| ";
+
+                cout << client->getGoal() << endl;
+            }
+        }
+    }
+
+    cout << "==========================================================================\n";
+}
+
+Trainer& Trainer::operator+=(Client& client)
+{
+    assignClients(client);
+    return *this;
+}
+
+bool Trainer::operator==(const Trainer& other) const
+{
+    return id == other.id;
+}
+
+ostream& operator<<(ostream& os, const Trainer& trainer)
+{
+    os << "Trainer[" << trainer.id << "] " << trainer.name
+       << " | Experience: " << trainer.yearsExp << " years"
+       << " | Clients: " << trainer.clients
+       << " | Rate: " << trainer.sessionRate;
+    return os;
+}
 
 
 // Register Account
 void Trainer::registerAccount()
 {
-    line();
-    cout << "           TRAINER REGISTRATION" << endl;
-    line();
+    bool validInput = false;
 
-    User::registerAccount();
+    while (!validInput)
+    {
+        try
+        {
+            line();
+            cout << "           TRAINER REGISTRATION" << endl;
+            line();
 
-        // Step 1: base user info
-    User::registerAccount();
+            User::registerAccount();
 
-    cout << "Enter Bio: ";
-    cin >> bio;
+            cout << "Enter Bio: ";
+            cin >> bio;
+            if (bio.empty()) {
+                throw invalid_argument("Bio cannot be empty.");
+            }
 
-    cout << "Enter Certification: ";
-    cin >> cert;
+            cout << "Enter Certification: ";
+            cin >> cert;
+            if (cert.empty()) {
+                throw invalid_argument("Certification cannot be empty.");
+            }
 
-    cout << "Enter Years Experience: ";
-    cin >> yearsExp;
+            cout << "Enter Years Experience: ";
+            cin >> yearsExp;
+            if (cin.fail() || yearsExp < 0) {
+                throw invalid_argument("Years of experience cannot be negative.");
+            }
 
-    cout << "Enter Session Rate: ";
-    cin >> sessionRate;
+            cout << "Enter Session Rate: ";
+            cin >> sessionRate;
+            if (cin.fail() || sessionRate < 0) {
+                throw invalid_argument("Session rate cannot be negative.");
+            }
 
-    cout << "Enter Availability: ";
-    cin >> availablility;
+            cout << "Enter Availability: ";
+            cin >> availablility;
+            if (availablility.empty()) {
+                throw invalid_argument("Availability cannot be empty.");
+            }
 
-    rating = 0.0;
-    clients = 0;
-    sessionsPerWeek = 0;
+            rating = 0.0;
+            clients = 0;
+            sessionsPerWeek = 0;
+            validInput = true;
 
-    cout << "\nTrainer Account Created Successfully!\n";
+            cout << "\nTrainer Account Created Successfully!\n";
+        }
+        catch (const exception& ex)
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "\nERROR: " << ex.what() << "\nPlease try again.\n\n";
+        }
+    }
 }
 
 // Menu
@@ -131,15 +256,17 @@ void Trainer::displayDetails()
 void Trainer::clientMenu()
 {
     int choice;
-    line();
-    cout << "           CLIENT MENU" << endl;
-    line();
 
     do
     {
-        cout << "  1) View Assigned Clients" << endl;
-        cout << "  2) Assign Clients" << endl;
-        cout << "  3) Remove Clients" << endl;
+        line();
+        cout << "           CLIENT MENU" << endl;
+        line();
+
+        cout << "  1) View Available Clients" << endl;
+        cout << "  2) View Assigned Clients" << endl;
+        cout << "  3) Assign Clients" << endl;
+        cout << "  4) Remove Clients" << endl;
         cout << "  0) Return to Main Menu" << endl;
         line();
 
@@ -148,28 +275,31 @@ void Trainer::clientMenu()
 
         switch(choice)
         {
-            case 1: break;
-            case 2: break;
-            case 3: break;
-            case 0: clearScreen(); displayMenu(); break;
-        }  
+            case 1: clearScreen(); displayClients(); break;
+            case 2: clearScreen(); displayAssignedClients(); break;
+            case 3: clearScreen(); assignClients(); break;
+            case 4: clearScreen(); removeClients(); break;
+            case 0: clearScreen(); break;
+            default: cout << "\n\n*ERROR: Invalid Choice*\n\n"; break;
+        }
     }
-    while (choice != 3); 
+    while (choice != 0);
 }
 
 // Session Menu
 void Trainer::sessionMenu()
 {
     int choice;
-    line();
-    cout << "           SESSION MENU" << endl;
-    line();
 
     do
     {
+        line();
+        cout << "           SESSION MENU" << endl;
+        line();
+
         cout << "  1) View Sessions" << endl;
         cout << "  2) Create Session" << endl;
-        cout << "  3) Remove Session(LOCKED)" << endl;
+        cout << "  3) Remove Session" << endl;
         cout << "  4) Edit Session" << endl;
         cout << "  0) Return to Main Menu" << endl;
         line();
@@ -179,14 +309,15 @@ void Trainer::sessionMenu()
 
         switch(choice)
         {
-            case 1: displaySession(); break;
-            case 2: createSession(); break;
-            case 3: break;
-            case 4: editSession(); break;
+            case 1: clearScreen(); displaySession(); break;
+            case 2: clearScreen(); createSession(); break;
+            case 3: clearScreen(); removeSession(); break;
+            case 4: clearScreen(); editSession(); break;
             case 0: clearScreen(); displayMenu(); break;
+            default: cout << "\n\n*ERROR: Invalid Choice*\n\n"; break;
         }  
     }
-    while (choice != 4);
+    while (choice != 0);
 }
 
 // Workout Menu
@@ -347,6 +478,9 @@ void Trainer::editProfile()
                 int dd, dm, dy;
                 cout << "\nEnter a New Date of Birth" << endl;
                 getValidDate(dd,dm,dy);
+                setDobDay(dd);
+                setDobMonth(dm);
+                setDobYear(dy);
                 clearScreen();
                 break;
             }
@@ -416,33 +550,235 @@ void Trainer::editProfile()
     while (choice != 11);
 }
 
+void Trainer::assignClients()
+{
+    bool hasAvailableClients = false;
+
+    for (int i = 0; i < static_cast<int>(ownedClients.size()); i++)
+    {
+        if (ownedClients[i] != nullptr && !isClientAssigned(ownedClients[i]->getId()))
+        {
+            hasAvailableClients = true;
+            break;
+        }
+    }
+
+    if (!hasAvailableClients)
+    {
+        cout << "\nNo available clients to assign.\n\n";
+        return;
+    }
+
+    printAvailableClientsTable();
+
+    int clientId;
+    cout << "Enter Client ID to assign (0 to return): ";
+    cin >> clientId;
+
+    if (clientId == 0)
+    {
+        clearScreen();
+        return;
+    }
+
+    for (int i = 0; i < static_cast<int>(ownedClients.size()); i++)
+    {
+        if (ownedClients[i] != nullptr && ownedClients[i]->getId() == clientId)
+        {
+            if (isClientAssigned(clientId))
+            {
+                cout << "\nThat client is already assigned.\n\n";
+                return;
+            }
+
+            try
+            {
+                *this += *ownedClients[i];
+                cout << "\nClient assigned successfully." << endl;
+                cout << "Total assigned clients: " << clients << "\n\n";
+            }
+            catch (const exception& ex)
+            {
+                cout << "\nERROR: " << ex.what() << "\n\n";
+            }
+
+            return;
+        }
+    }
+
+    cout << "\nERROR: Client not found.\n\n";
+}
+
+void Trainer::assignClients(Client& client)
+{
+    string clientName = client.getName();
+
+    if (clientName.empty())
+    {
+        throw invalid_argument("Client name cannot be empty.");
+    }
+
+    for (int i = 0; i < assignedClients.size(); i++)
+    {
+        if (assignedClients[i] != nullptr && assignedClients[i]->getName() == clientName)
+        {
+            throw runtime_error(clientName + " is already assigned to this trainer.");
+        }
+    }
+
+    assignedClients.push_back(&client);
+    clients = static_cast<int>(assignedClients.size());
+}
+
+void Trainer::displayClients()
+{
+    int choice;
+
+    printAvailableClientsTable();
+    cout << "  1) Assign Client\n";
+    cout << "  0) Return to Client Menu\n";
+    cout << "  Choice: ";
+    cin >> choice;
+
+    switch(choice)
+    {
+        case 1:
+            clearScreen();
+            assignClients();
+            break;
+
+        case 0:
+            clearScreen();
+            break;
+
+        default:
+            cout << "\n\n*ERROR: Invalid Choice*\n\n";
+            break;
+    }
+}
+
+void Trainer::addAvailableClient(const Client& client)
+{
+    Client* storedClient = new Client(client);
+    ownedClients.push_back(storedClient);
+}
+
+void Trainer::displayAssignedClients() const
+{
+    cout << "==========================================================================\n";
+    cout << "                            ASSIGNED CLIENTS\n";
+    cout << "==========================================================================\n";
+
+    if (assignedClients.empty())
+    {
+        cout << " No assigned clients.\n\n";
+    }
+    else
+    {
+        cout << " ID | Name                 | Membership      | Goal\n";
+        cout << "--------------------------------------------------------------------------\n";
+
+        for (int i = 0; i < assignedClients.size(); i++)
+        {
+            if (assignedClients[i] != nullptr)
+            {
+                Client* client = assignedClients[i];
+
+                if (client->getId() < 10) cout << "  ";
+                else if (client->getId() < 100) cout << ' ';
+                cout << client->getId() << " | ";
+
+                cout << client->getName();
+                for (int j = static_cast<int>(client->getName().length()); j < 20; j++)
+                {
+                    cout << ' ';
+                }
+                cout << "| ";
+
+                cout << client->getMembershipType();
+                for (int j = static_cast<int>(client->getMembershipType().length()); j < 15; j++)
+                {
+                    cout << ' ';
+                }
+                cout << "| ";
+
+                cout << client->getGoal() << endl;
+            }
+        }
+    }
+
+    cout << "==========================================================================\n";
+}
+
+void Trainer::removeClients()
+{
+    if (assignedClients.empty())
+    {
+        cout << "\nNo assigned clients to remove.\n\n";
+        return;
+    }
+
+    displayAssignedClients();
+
+    int clientId;
+    cout << "Enter Client ID to remove (0 to return): ";
+    cin >> clientId;
+
+    if (clientId == 0)
+    {
+        clearScreen();
+        return;
+    }
+
+    for (int i = 0; i < static_cast<int>(assignedClients.size()); i++)
+    {
+        if (assignedClients[i] != nullptr && assignedClients[i]->getId() == clientId)
+        {
+            string clientName = assignedClients[i]->getName();
+            assignedClients.erase(assignedClients.begin() + i);
+            clients = static_cast<int>(assignedClients.size());
+
+            cout << "\nClient removed successfully: " << clientName << endl;
+            cout << "Total assigned clients: " << clients << "\n\n";
+            return;
+        }
+    }
+
+    cout << "\nERROR: Assigned client not found.\n\n";
+}
+
 // Create Session
 void Trainer::createSession()
 {
     trainerSession.createSession();
 }
 
+// Remove Session
+void Trainer::removeSession()
+{
+    trainerSession.removeSession();
+}
+
 // View Session
 void Trainer::displaySession()
 {
     int choice;
-    trainerSession.displaySession();
-    cout << "  1) Edit Session" << endl;
-    cout << "  0) Return to Menu" << endl;
-    cout << "  Choice: ";
+
     do
     {
+        trainerSession.displaySession();
+        cout << "  1) Edit Session" << endl;
+        cout << "  0) Return to Session Menu" << endl;
+        cout << "  Choice: ";
         cin >> choice;
         switch(choice)
         {
-        case 1: editSession(); break;
-        case 0: displayMenu(); break;
-        } 
+        case 1: clearScreen(); editSession(); break;
+        case 0: clearScreen(); break;
+        default: cout << "\n\n*ERROR: Invalid Choice*\n\n"; break;
+        }
     }
-    while (choice != 1);
-
-    clearScreen();
-    
+    while (choice != 0);
 }
 
 // Edit Session
@@ -459,8 +795,7 @@ void Trainer::clearScreen()
     cout << endl; 
 }
 
-void Trainer::line() 
+void Trainer::line() const
 { 
     cout << "========================================\n"; 
 }
-
