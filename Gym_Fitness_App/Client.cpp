@@ -2,34 +2,91 @@
 #include <limits>
 #include <stdexcept>
 
+namespace {
+void printClientGoalTable(const vector<Goal>& goals)
+{
+    if (goals.empty())
+    {
+        cout << " No goals available.\n\n";
+        return;
+    }
+
+    cout << "=====================================================================================\n";
+    cout << "                                     MY GOALS\n";
+    cout << "=====================================================================================\n";
+    cout << " ID | Goal Name            | Type      | Target      | Deadline        | Progress | Status\n";
+    cout << "-------------------------------------------------------------------------------------\n";
+
+    for (int i = 0; i < static_cast<int>(goals.size()); i++)
+    {
+        const Goal& goal = goals[i];
+
+        if (goal.getId() < 10) cout << "  ";
+        else if (goal.getId() < 100) cout << ' ';
+        cout << goal.getId() << "  ";
+
+        cout << goal.getGoal();
+        for (int j = static_cast<int>(goal.getGoal().length()); j < 20; j++) cout << ' ';
+        cout << "  ";
+
+        cout << goal.getType();
+        for (int j = static_cast<int>(goal.getType().length()); j < 9; j++) cout << ' ';
+        cout << "  ";
+
+        string unit = (goal.getType() == "Cardio") ? " minutes" : " kg";
+        string targetValue = to_string(static_cast<int>(goal.getTarget())) + unit;
+        cout << targetValue;
+        for (int j = static_cast<int>(targetValue.length()); j < 11; j++) cout << ' ';
+        cout << "  ";
+
+        cout << goal.getDeadline();
+        for (int j = static_cast<int>(goal.getDeadline().length()); j < 15; j++) cout << ' ';
+        cout << "  ";
+
+        string percent = to_string(static_cast<int>(goal.getPercentage())) + "%";
+        cout << percent;
+        for (int j = static_cast<int>(percent.length()); j < 8; j++) cout << ' ';
+        cout << "  " << goal.getStatus() << endl;
+    }
+
+    cout << "=====================================================================================\n";
+}
+}
+
 
 // Constructors
 Client::Client()
-    : User(), height(0.0), weight(0.0), membershipType("N/A"), goal("N/A"),
-        expiryDay(1), expiryMonth(1), expiryYear(2026),
+    : User(), height(0.0), weight(0.0), goal("N/A"),
         bookedSession(new Session()), currentGoal(new Goal())
-{}
+{
+    initializeWorkoutData();
+}
 
-Client::Client(double h, double w, string mt, string g, int ed, int em, int ey)
-    : User(), height(h), weight(w), membershipType(mt), goal(g),
-        expiryDay(ed), expiryMonth(em), expiryYear(ey),
+Client::Client(double h, double w, string g)    
+    : User(), height(h), weight(w), goal(g),
         bookedSession(new Session()), currentGoal(new Goal())
-{}
+{
+    initializeWorkoutData();
+}
 
 Client::Client(int i, string n, string e, int ph, int dd, int dm, int dy, string p,
-               double h, double w, string mt, string g, int ed, int em, int ey)
-    : User(i, n, e, ph, dd, dm, dy, p), height(h), weight(w), membershipType(mt), goal(g),
-        expiryDay(ed), expiryMonth(em), expiryYear(ey),
+               double h, double w, string g)
+    : User(i, n, e, ph, dd, dm, dy, p), height(h), weight(w), goal(g),
         bookedSession(new Session()), currentGoal(new Goal())
-{}
+{
+    initializeWorkoutData();
+}
 
 Client::Client(const Client& other)
     : User(other.id, other.name, other.email, other.phone, other.dobDay, other.dobMonth, other.dobYear, other.password),
-        height(other.height), weight(other.weight), membershipType(other.membershipType), goal(other.goal),
-      expiryDay(other.expiryDay), expiryMonth(other.expiryMonth), expiryYear(other.expiryYear),
-      bookedSessionIds(other.bookedSessionIds),
-      bookedSession(new Session(*other.bookedSession)), currentGoal(new Goal(*other.currentGoal))
-{}
+        height(other.height), weight(other.weight), goal(other.goal),
+      bookedSessionIds(other.bookedSessionIds), clientGoals(other.clientGoals),
+      bookedSession(new Session(*other.bookedSession)), currentGoal(new Goal(*other.currentGoal)),
+      cardioWorkout(other.cardioWorkout), currentExercise(other.currentExercise),
+      currentWorkoutPlan(other.currentWorkoutPlan), currentWorkoutExercise(other.currentWorkoutExercise)
+{
+    syncWorkoutLinks();
+}
 
 Client& Client::operator=(const Client& other)
 {
@@ -45,15 +102,17 @@ Client& Client::operator=(const Client& other)
         password = other.password;
         height = other.height;
         weight = other.weight;
-        membershipType = other.membershipType;
         goal = other.goal;
-        expiryDay = other.expiryDay;
-        expiryMonth = other.expiryMonth;
-        expiryYear = other.expiryYear;
         bookedSessionIds = other.bookedSessionIds;
+        clientGoals = other.clientGoals;
+        cardioWorkout = other.cardioWorkout;
+        currentExercise = other.currentExercise;
+        currentWorkoutPlan = other.currentWorkoutPlan;
+        currentWorkoutExercise = other.currentWorkoutExercise;
 
         *bookedSession = *other.bookedSession;
         *currentGoal = *other.currentGoal;
+        syncWorkoutLinks();
     }
 
     return *this;
@@ -73,7 +132,6 @@ bool Client::operator==(const Client& other) const
 ostream& operator<<(ostream& os, const Client& client)
 {
     os << "Client[" << client.id << "] " << client.name
-       << " | Membership: " << client.membershipType
        << " | Goal: " << client.goal;
     return os;
 }
@@ -86,6 +144,34 @@ void Client::setBookedSession(const Session& session)
 void Client::setCurrentGoal(const Goal& newGoal)
 {
     *currentGoal = newGoal;
+
+    for (int i = 0; i < static_cast<int>(clientGoals.size()); i++)
+    {
+        if (clientGoals[i].getId() == newGoal.getId())
+        {
+            clientGoals[i] = newGoal;
+            return;
+        }
+    }
+
+    clientGoals.push_back(newGoal);
+}
+
+void Client::setWorkoutTester(const WorkoutPlan& workoutPlan, string exerciseName, int sets, int reps, int restTime)
+{
+    currentWorkoutPlan = workoutPlan;
+
+    Exercise* linkedExercise = currentWorkoutPlan.findExercise(exerciseName);
+    if (linkedExercise != nullptr)
+    {
+        currentExercise = *linkedExercise;
+        currentWorkoutExercise.setExercise(linkedExercise);
+    }
+
+    currentWorkoutExercise.setWorkoutPlan(&currentWorkoutPlan);
+    currentWorkoutExercise.setSets(sets);
+    currentWorkoutExercise.setReps(reps);
+    currentWorkoutExercise.setRestTime(restTime);
 }
 
 bool Client::hasBookedSession(int sessionId) const
@@ -99,6 +185,53 @@ bool Client::hasBookedSession(int sessionId) const
     }
 
     return false;
+}
+
+void Client::initializeWorkoutData()
+{
+    cardioWorkout.setGoal("5km Run");
+    cardioWorkout.setType("Cardio");
+    cardioWorkout.setTarget(25);
+    cardioWorkout.setDeadline("31/12/2026");
+    cardioWorkout.setStatus("In Progress");
+
+    currentExercise.setExercise("Strength");
+    currentExercise.setName("Bench Press");
+    currentExercise.setMuscleGroup("Chest");
+    currentExercise.setEquipment("Barbell");
+    currentExercise.setRating(5);
+
+    currentWorkoutPlan.setPlan("WP101");
+    currentWorkoutPlan.setName("Upper Body Builder");
+    currentWorkoutPlan.setStartDate("22/04/2026");
+    currentWorkoutPlan.setEndDate("22/06/2026");
+    currentWorkoutPlan.addExercise(currentExercise);
+
+    currentWorkoutExercise.setSets(4);
+    currentWorkoutExercise.setReps(10);
+    currentWorkoutExercise.setRestTime(90);
+    syncWorkoutLinks();
+}
+
+void Client::syncWorkoutLinks()
+{
+    currentWorkoutExercise.setWorkoutPlan(&currentWorkoutPlan);
+
+    Exercise* linkedExercise = currentWorkoutPlan.findExercise(currentExercise.getName());
+    if (linkedExercise == nullptr)
+    {
+        if (currentWorkoutPlan.getExerciseCount() == 0)
+        {
+            currentWorkoutPlan.addExercise(currentExercise);
+        }
+        linkedExercise = currentWorkoutPlan.findExercise(currentExercise.getName());
+    }
+
+    if (linkedExercise != nullptr)
+    {
+        currentExercise = *linkedExercise;
+        currentWorkoutExercise.setExercise(linkedExercise);
+    }
 }
 
 
@@ -138,16 +271,6 @@ void Client::registerAccount()
                 throw invalid_argument("Goal cannot be empty.");
             }
 
-            cout << "Enter Membership Type: ";
-            cin >> membershipType;
-            if (membershipType != "Basic" && membershipType != "Premium" && membershipType != "basic" && membershipType != "premium")
-            {
-                throw invalid_argument("Membership type must be Basic or Premium.");
-            }
-
-            cout << "Enter Expiry Date:" << endl;
-            getValidDate(expiryDay, expiryMonth, expiryYear);
-
             validInput = true;
             cout << "\nAccount Successfully Created." << endl;
         }
@@ -162,39 +285,29 @@ void Client::registerAccount()
 
 // Client Menu
 void Client::displayMenu()
-{       
+{     
+    User::displayMenu(); 
+    cout << "  0) Logout" << endl;
+    line();
+    cout << "  Choice: "; 
     int choice;
     do
     { 
-        line();
-        cout << "           CLIENT MENU" << endl;
-
-        line();
-        cout << "  1) Profile" << endl;
-        cout << "  2) Membership Menu" << endl;
-        cout << "  3) Progress Menu" << endl;
-        cout << "  4) Workout Menu" << endl;
-        cout << "  5) Session Menu" << endl;
-        cout << "  0) Logout" << endl;
-        line();
-
-        cout << "  Choice: ";
         cin >> choice;
 
         clearScreen();
     
         switch(choice) {
             case 1: displayDetails(); break;
-            case 2: membershipMenu(); break;
-            case 3: goalMenu(); break;
-            case 4: workoutMenu(); break;
-            case 5: sessionMenu(); break;
-            case 0: displayMenu(); break;
+            case 2: goalMenu(); break;
+            case 3: workoutMenu(); break;
+            case 4: sessionMenu(); break;
+            case 0: return; break;
             default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         }
 
     } 
-    while (choice != 5);
+    while (choice != 0);
     
 }
 
@@ -205,16 +318,8 @@ void Client::displayDetails()
     int choice;
     do
     {
-        line();
-        cout << "           ACCOUNT DETAILS\n";
-        line();
-
-        cout << "  Member ID:     " << id << endl;
-        cout << "  Name:          " << name << endl;
-        cout << "  Password:      " << password << endl;
-        cout << "  Email Address: " << email << endl;
-        cout << "  Phone Number:  0" << phone << endl;
-        cout << "  Date Of Birth: " << dobDay << "/" << dobMonth << "/" << dobYear << endl;
+        clearScreen();
+        User::displayDetails();
         cout << "  Height:        " << height << "cm" << endl;
         cout << "  Weight:        " << weight << "kg" << endl;
 
@@ -226,15 +331,13 @@ void Client::displayDetails()
         cout << "  Choice: ";
         cin >> choice;
 
-        clearScreen();
-
         switch(choice){
             case 1: editProfile(); break;
-            case 0: displayMenu(); break;
+            case 0: clearScreen(); displayMenu(); break;
             default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         }
     }
-        while (choice != 2);
+    while (choice != 0);
 }
 
 void Client::displayClients() const
@@ -242,8 +345,8 @@ void Client::displayClients() const
     cout << "===============================================================================\n";
     cout << "                                CLIENT DETAILS\n";
     cout << "===============================================================================\n";
-    cout << " ID | Name                 | Membership      | Goal\n";
-    cout << "-------------------------------------------------------------------------------\n";
+    cout << " ID | Name                 | Goal\n";
+    cout << "---------------------------------------------------\n";
 
     if (id < 10) cout << "  ";
     else if (id < 100) cout << ' ';
@@ -256,49 +359,8 @@ void Client::displayClients() const
     }
     cout << ' ';
 
-    cout << membershipType;
-    for (int i = static_cast<int>(membershipType.length()); i < 15; i++)
-    {
-        cout << ' ';
-    }
-    cout << ' ';
-
     cout << goal << endl;
     cout << "===============================================================================\n";
-}
-
-
-// Membership Menu
-void Client::membershipMenu()
-{
-    int choice;
-
-    do{
-        line();
-        cout << "           MEMBERSHIP MENU" << endl;
-        line();
-
-        cout << " Type:    " << membershipType << endl;
-        cout << " Expiry:  " << expiryDay << "/" << expiryMonth << "/" << expiryYear << endl;
-
-        line();
-
-        cout << "  Month Gym Membership ($50)" << endl;
-        cout << "  Year Gym Membership ($450)" << endl;
-        cout << "  Month Gym & Class Membership ($550)" << endl;
-        line();
-        cout << "  0) Return to Client Menu:";
-        cin >> choice;
-        
-        clearScreen();
-
-        switch(choice)
-        {
-            case 0: displayMenu(); break;
-            default: cout << "\n*ERROR: Invalid Choice*\n\n";
-        }
-
-    } while(choice != 0); 
 }
 
 
@@ -308,15 +370,7 @@ void Client::goalMenu()
     int choice;
     do
     {
-        clearScreen();
-        line();
-        cout << "           GOAL MENU" << endl;
-        line();
-
-        cout << "  1) New Goal" << endl;
-        cout << "  2) View Goals" << endl;
-        cout << "  3) Remove Goal (LOCKED)" << endl;
-        cout << "  4) View Progress (LOCKED)" << endl;
+        User::goalMenu();
         cout << "  0) Return to Client Menu" << endl;
         line();
 
@@ -327,30 +381,31 @@ void Client::goalMenu()
         {
             case 1:
                 clearScreen();
-                addGoal();
-                currentGoal->setType();
-                currentGoal->updateDeadline();
-                currentGoal->updateStatus();
+                displayGoals();
                 break;
 
             case 2:
                 clearScreen();
-                displayGoal();
+                {
+                    Goal newGoal;
+                    addGoal(newGoal);
+                }
                 break;
 
             case 3:
-                cout << "\nRemove Goal is currently locked.\n";
+                clearScreen();
+                editGoal();
                 cin.get();
                 break;
 
             case 4:
                 clearScreen();
-                checkProgress();
+                removeGoal();
                 break;
 
             case 0:
-            clearScreen();
-            displayMenu();
+                clearScreen();
+                displayMenu();
                 break;
 
             default:
@@ -366,35 +421,32 @@ void Client::goalMenu()
 void Client::workoutMenu()
 {
     int choice;
-    line();
-    cout << "           WORKOUT MENU" << endl;
-    line();
-
     do
     {
-        cout << "  1) Log Workout (LOCKED)" << endl;
-        cout << "  2) View Workouts (LOCKED)" << endl;
-        cout << "  3) Edit Workouts (LOCKED)" << endl;
+        line();
+        cout << "           WORKOUT MENU" << endl;
+        line();
+        cout << "  1) View Workout Plans" << endl;
+        cout << "  2) Create Workout Plan" << endl;
+        cout << "  3) Edit Workout Plan" << endl;
+        cout << "  4) Remove Workout Plan" << endl;
         cout << "  0) Return to Client Menu" << endl;
         line();
-
-        cout << "  Choice: " << endl;
+        cout << "  Choice: ";
         cin >> choice;
-
-        clearScreen();
 
         switch(choice)
         {
-            case 1: logWorkout(); break;
-            case 2: displayWorkout(); break;
-            case 3: editWorkout(); break;
-            case 0: displayMenu(); break;
+            case 1: clearScreen(); displayWorkouts(); break;
+            case 2: clearScreen(); createWorkout(); break;
+            case 3: clearScreen(); editWorkout(); break;
+            case 4: clearScreen(); removeWorkout(); break;
+            case 0: clearScreen(); displayMenu(); break;
             default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         }
     }
-        while(choice != 4);
+    while(choice != 0);
 }
-
 
 // Session Menu
 void Client::sessionMenu()
@@ -435,19 +487,10 @@ void Client::sessionMenu()
 void Client::editProfile()
 {
     int choice;
-
     do
     {
-                line();
-        cout << "           ACCOUNT DETAILS\n";
-        line();
-
-        cout << "  Member ID:     " << id << endl;
-        cout << "  Name:          " << name << endl;
-        cout << "  Password:      " << password << endl;
-        cout << "  Email Address: " << email << endl;
-        cout << "  Phone Number:  0" << phone << endl;
-        cout << "  Date Of Birth: " << dobDay << "/" << dobMonth << "/" << dobYear << endl;
+        clearScreen();
+        User::displayDetails();
         cout << "  Height:        " << height << "cm" << endl;
         cout << "  Weight:        " << weight << "kg" << endl;
 
@@ -462,7 +505,6 @@ void Client::editProfile()
         cout << "  5) Date of Birth" << endl;
         cout << "  6) Height" << endl;
         cout << "  7) Weight" << endl;
-        cout << "  8) Return to Profile Menu" << endl;
         cout << "  0) Return to Client Menu" << endl;
         line();
 
@@ -477,7 +519,6 @@ void Client::editProfile()
                 cout << "\nEnter a New Name: ";
                 cin >> n;
                 setName(n);
-                clearScreen();
                 break;
             }
             case 2: 
@@ -486,7 +527,6 @@ void Client::editProfile()
                 cout << "\nEnter a New Password: ";
                 cin >> p;
                 setPassword(p);
-                clearScreen();
                 break;
             }
             case 3: 
@@ -495,7 +535,6 @@ void Client::editProfile()
                 cout << "\nEnter a New Email Address: ";
                 cin >> e;
                 setEmail(e);
-                clearScreen();
                 break;
             }
             case 4: 
@@ -504,7 +543,6 @@ void Client::editProfile()
                 cout << "\nEnter a New Phone Number: ";
                 cin >> ph;
                 setPhone(ph);
-                clearScreen();
                 break;
             }
             case 5: 
@@ -515,7 +553,6 @@ void Client::editProfile()
                 setDobDay(dd);
                 setDobMonth(dm);
                 setDobYear(dy);
-                clearScreen();
                 break;
             }
             case 6: 
@@ -524,7 +561,6 @@ void Client::editProfile()
                 cout << "\nEnter a New Height (cm): ";
                 cin >> h;
                 setHeight(h);
-                clearScreen();
                 break;
             }
             case 7: 
@@ -533,49 +569,75 @@ void Client::editProfile()
                 cout << "\nEnter a New Weight (kg): ";
                 cin >> w;
                 setWeight(w);
-                clearScreen();
                 break;
             }
-            case 8: 
-            {   
-                cout << "\nReturning to Profile Menu...\n";
-                clearScreen();
-                displayDetails();
-                break;
-            }
-            case 0: 
-            {
-                clearScreen();
-                displayMenu();  
-                break;
-            }
+            case 0: clearScreen(); displayMenu();
 
             default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
         } 
 
     } 
-    while (choice != 6);
+    while (choice != 0);
 }
 
 
 // Display Workouts
-void Client::displayWorkout()
+void Client::displayWorkouts()
 {
-
+    currentWorkoutPlan.viewPlanDetails();
 }
 
+void Client::displayCurrentWorkout() const
+{
+    string exerciseName = currentExercise.getName();
+    string muscleGroup = currentExercise.getMuscleGroup();
+    string equipment = currentExercise.getEquipment();
+    string planName = currentWorkoutPlan.getName();
+    string workoutSummary = to_string(currentWorkoutExercise.getSets()) + "x" + to_string(currentWorkoutExercise.getReps());
+    string restSummary = to_string(currentWorkoutExercise.getRestTime()) + "s rest";
+
+    cout << "=====================================================================================\n";
+    cout << "                              CURRENT CLIENT WORKOUT\n";
+    cout << "=====================================================================================\n";
+    cout << " TYPE             | NAME                 | FOCUS / DATES         | DETAILS\n";
+    cout << "-------------------------------------------------------------------------------------\n";
+
+    cout << " Exercise         | " << exerciseName;
+    for (int i = static_cast<int>(exerciseName.length()); i < 20; i++) cout << ' ';
+    cout << " | " << muscleGroup;
+    for (int i = static_cast<int>(muscleGroup.length()); i < 21; i++) cout << ' ';
+    cout << " | " << equipment << endl;
+
+    cout << " Workout Plan     | " << planName;
+    for (int i = static_cast<int>(planName.length()); i < 20; i++) cout << ' ';
+    cout << " | " << currentWorkoutPlan.getStartDate() << " - " << currentWorkoutPlan.getEndDate();
+    for (int i = static_cast<int>((currentWorkoutPlan.getStartDate() + " - " + currentWorkoutPlan.getEndDate()).length()); i < 21; i++) cout << ' ';
+    cout << " | " << currentWorkoutPlan.getPlan() << endl;
+
+    cout << " Workout Exercise | " << exerciseName;
+    for (int i = static_cast<int>(exerciseName.length()); i < 20; i++) cout << ' ';
+    cout << " | " << workoutSummary;
+    for (int i = static_cast<int>(workoutSummary.length()); i < 21; i++) cout << ' ';
+    cout << " | " << restSummary << endl;
+
+    cout << "=====================================================================================\n";
+}
+
+void Client::createWorkout()
+{
+    currentWorkoutPlan.createPlan();
+}
 
 // Edit Workouts
 void Client::editWorkout()
 {
+    currentWorkoutPlan.editPlan();
 }
 
-
-// Log Workouts
-void Client::logWorkout()
+void Client::removeWorkout()
 {
+    currentWorkoutPlan.removePlan();
 }
-
 
 // View Sessions
 void Client::viewSession()
@@ -608,10 +670,9 @@ void Client::viewSession()
                 unbookSession();
                 break;
 
-            case 0: 
+            case 0:
                 clearScreen();
-                sessionMenu();
-                break;
+                return;
 
             default:
                 cout << "\n\n*ERROR: Invalid Choice*\n\n";
@@ -657,7 +718,7 @@ void Client::unbookSession()
 {
     if (bookedSessionIds.empty())
     {
-        cout << "\nYou do not have a booked session to unbook.\n\n";
+        cout << "\nYou're not booked in a session'.\n\n";
         return;
     }
 
@@ -688,12 +749,110 @@ void Client::unbookSession()
 
 void Client::displayGoal()
 {
+    int choice;
+    clearScreen();
     currentGoal->displayGoal();
+    cout << "  1) Edit Goal\n";
+    cout << "  2) Update Progress\n";
+    cout << "  3) Remove Goal\n";
+    cout << "  0) Return to Goal Menu\n";
+    cout << "  Choice: ";
+    cin >> choice;
+    switch(choice)
+    {
+        case 1: clearScreen(); editGoal();         break;
+        case 2: clearScreen(); updateProgress();   break;
+        case 3: clearScreen(); removeGoal();       break;
+        case 0: clearScreen(); goalMenu();         break;
+        default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
+    }
+}
+
+void Client::displayGoals()
+{
+    if (clientGoals.empty())
+    {
+        line();
+        cout << "           GOAL DETAILS" << endl;
+        line();
+        cout << " No goals available.\n\n";
+        line();
+    }
+    else
+    {
+        printClientGoalTable(clientGoals);
+    }
+
+    cout << "  1) Edit Goal\n";
+    cout << "  2) Update Progress\n";
+    cout << "  3) Remove Goal\n";
+    cout << "  0) Return to Goal Menu\n";
+    cout << "  Choice: ";
+    int choice;
+    cin >> choice;
+    switch(choice)
+    {
+        case 1: clearScreen(); editGoal();          break;
+        case 2: clearScreen(); updateProgress();    break;
+        case 3: clearScreen(); removeGoal();        break;
+        case 0: clearScreen(); return;
+        default: cout << "\n\n*ERROR: Invalid Choice*\n\n";
+    }
 }
 
 void Client::updateProgress()
 {
-    currentGoal->updateProgress();
+    if (clientGoals.empty())
+    {
+        cout << "\nNo goals available to update.\n";
+        return;
+    }
+
+    int goalId;
+    cout << "Enter Goal ID to update progress (0 to return): ";
+    cin >> goalId;
+
+    if (goalId == 0)
+    {
+        return;
+    }
+
+    for (int i = 0; i < static_cast<int>(clientGoals.size()); i++)
+    {
+        if (clientGoals[i].getId() == goalId)
+        {
+            const string unit = (clientGoals[i].getType() == "Cardio") ? "minutes" : "kg";
+            double newValue;
+
+            do
+            {
+                newValue = currentGoal->getValidPositiveDouble("Enter New Personal Best [" + unit + "]: ");
+                if (newValue <= clientGoals[i].getCurrentPR())
+                {
+                    cout << "Error: New PR must be greater than current PR ("
+                         << clientGoals[i].getCurrentPR() << ' ' << unit << "). Please try again.\n";
+                }
+            }
+            while (newValue <= clientGoals[i].getCurrentPR());
+
+            clientGoals[i].setNewPR(newValue);
+            clientGoals[i].checkProgress();
+            *currentGoal = clientGoals[i];
+            return;
+        }
+    }
+
+    cout << "\nERROR: Goal not found.\n";
+}
+
+void Client::updateDeadline()
+{
+    currentGoal->updateDeadline();
+}
+
+void Client::updateStatus()
+{
+    currentGoal->updateStatus();
 }
 
 void Client::checkProgress()
@@ -701,26 +860,209 @@ void Client::checkProgress()
     currentGoal->checkProgress();
 }
 
-void Client::addGoal()
+void Client::addGoal(const Goal& goal)
 {
-    currentGoal->addGoal();
+    if (!goal.getGoal().empty())
+    {
+        setCurrentGoal(goal);
+        return;
+    }
+
+    currentGoal->addGoal(goal);
+    setCurrentGoal(*currentGoal);
 }
 
+void Client::editGoal()
+{
+    if (clientGoals.empty())
+    {
+        cout << "\nNo goals available to edit.\n";
+        return;
+    }
+
+    int goalId;
+    printClientGoalTable(clientGoals);
+    cout << "Enter Goal ID to edit (0 to return): ";
+    cin >> goalId;
+
+    if (goalId == 0)
+    {
+        return;
+    }
+
+    Goal* selectedGoal = nullptr;
+    for (int i = 0; i < static_cast<int>(clientGoals.size()); i++)
+    {
+        if (clientGoals[i].getId() == goalId)
+        {
+            selectedGoal = &clientGoals[i];
+            break;
+        }
+    }
+
+    if (selectedGoal == nullptr)
+    {
+        cout << "\nERROR: Goal not found.\n";
+        return;
+    }
+
+    int choice;
+    do
+    {
+        clearScreen();
+        selectedGoal->displayGoal();
+        cout << "  1) Goal Name" << endl;
+        cout << "  2) Starting PR" << endl;
+        cout << "  3) Target" << endl;
+        cout << "  4) Latest PR" << endl;
+        cout << "  5) Deadline" << endl;
+        cout << "  0) Return to Goal Menu" << endl;
+        line();
+        cout << "  Choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+            case 1:
+            {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                string newGoalName;
+                do
+                {
+                    cout << "\nEnter a New Goal: ";
+                    getline(cin, newGoalName);
+                }
+                while (newGoalName.empty());
+
+                selectedGoal->setGoal(newGoalName);
+                selectedGoal->setType(selectedGoal->setType());
+                break;
+            }
+            case 2:
+            {
+                string unit = (selectedGoal->getType() == "Cardio") ? "minutes" : "kg";
+                double pr = currentGoal->getValidPositiveDouble("\nEnter a New Starting PR [" + unit + "]: ");
+                selectedGoal->setCurrentPR(pr);
+                break;
+            }
+            case 3:
+            {
+                string unit = (selectedGoal->getType() == "Cardio") ? "minutes" : "kg";
+                double targetValue;
+                do
+                {
+                    targetValue = currentGoal->getValidPositiveDouble("\nEnter a New Target [" + unit + "]: ");
+                    if (targetValue <= selectedGoal->getCurrentPR())
+                    {
+                        cout << "ERROR: Target must be greater than the starting PR.\n";
+                    }
+                }
+                while (targetValue <= selectedGoal->getCurrentPR());
+                selectedGoal->setTarget(targetValue);
+                break;
+            }
+            case 4:
+            {
+                string unit = (selectedGoal->getType() == "Cardio") ? "minutes" : "kg";
+                double pr = currentGoal->getValidPositiveDouble("\nEnter a New Latest PR [" + unit + "]: ");
+                selectedGoal->setNewPR(pr);
+                selectedGoal->checkProgress();
+                break;
+            }
+            case 5:
+            {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                char timePeriod = currentGoal->getValidCharInput("[D] Day(s)  [M] Month(s)  [Y] Year(s): ", "DMY");
+                int amount = 0;
+
+                switch (timePeriod)
+                {
+                    case 'D': amount = currentGoal->getValidPositiveInt("Enter number of day(s): "); break;
+                    case 'M': amount = currentGoal->getValidPositiveInt("Enter number of month(s): "); break;
+                    case 'Y': amount = currentGoal->getValidPositiveInt("Enter number of year(s): "); break;
+                }
+
+                string deadline;
+                if (timePeriod == 'D') deadline = to_string(amount) + (amount == 1 ? " day" : " days");
+                if (timePeriod == 'M') deadline = to_string(amount) + (amount == 1 ? " month" : " months");
+                if (timePeriod == 'Y') deadline = to_string(amount) + (amount == 1 ? " year" : " years");
+
+                selectedGoal->setDeadline(deadline);
+                break;
+            }
+            case 0:
+                *currentGoal = *selectedGoal;
+                return;
+            default:
+                cout << "\n\n*ERROR: Invalid Choice*\n\n";
+                break;
+        }
+    }
+    while (choice != 0);
+}
+
+void Client::removeGoal()
+{
+    if (clientGoals.empty())
+    {
+        cout << "\nNo goals available to remove.\n";
+        return;
+    }
+
+    int goalId;
+    printClientGoalTable(clientGoals);
+    cout << "Enter the Goal ID to remove: ";
+    cin >> goalId;
+
+    for (int i = 0; i < static_cast<int>(clientGoals.size()); i++)
+    {
+        if (clientGoals[i].getId() == goalId)
+        {
+            char confirm;
+            cout << "\nAre you sure you want to remove this goal? (Y/N): ";
+            cin >> confirm;
+
+            if (confirm == 'Y' || confirm == 'y')
+            {
+                clientGoals.erase(clientGoals.begin() + i);
+                if (clientGoals.empty())
+                {
+                    *currentGoal = Goal();
+                }
+                else
+                {
+                    *currentGoal = clientGoals.back();
+                }
+                cout << "\nGoal removed successfully.\n\n";
+            }
+            else
+            {
+                cout << "\nGoal removal cancelled.\n";
+            }
+            return;
+        }
+    }
+
+    cout << "\nERROR: Goal not found.\n";
+}
 // UI
 void Client::clearScreen() 
 { 
-    for(int i = 0; i < 40; i++) 
-    cout << endl; 
+    User::clearScreen(); 
 }
 
 void Client::line() 
 { 
-    cout << "========================================\n"; 
+    User::line(); 
 }
 
-void Client::title(string t) 
-{ 
-    line(); 
-    cout << "          " << t << endl; 
-    line(); 
+void Client::lineLong()
+{
+    User::lineLong();
 }
+
+void Client::dashedLine()
+{
+    User::dashedLine();
+}
+
