@@ -191,7 +191,7 @@ void Session::createSession() {
 
 void Session::addSession(const Session& session) {
     if (sessionIndex(session.getId()) != -1) {
-        return;
+        throw SessionException("A session with that ID already exists.");
     }
 
     sessionList.push_back(session);
@@ -204,39 +204,44 @@ void Session::addSession(const Session& session) {
 // Remove Session
 void Session::removeSession()
 {
-    if (sessionList.empty())
+    try
     {
-        cout << "\nNo sessions have been created yet.\n";
-        return;
-    }
+        if (sessionList.empty())
+        {
+            throw SessionException("No sessions have been created yet.");
+        }
 
-    displaySession();
-
-    int sessionId;
-    cout << "\nEnter the Session ID to remove: ";
-    cin >> sessionId;
-
-    int index = sessionIndex(sessionId);
-    if (index == -1)
-    {
-        cout << "\nERROR: Session not found.\n";
-        return;
-    }
-
-    char confirm;
-    cout << "\nAre you sure you want to remove this session? (Y/N): ";
-    cin >> confirm;
-
-    if (confirm == 'Y' || confirm == 'y')
-    {
-        sessionList.erase(sessionList.begin() + index);
-        clearScreen();
-        cout << "\nSession removed successfully.\n\n";
         displaySession();
+
+        int sessionId;
+        cout << "\nEnter the Session ID to remove: ";
+        cin >> sessionId;
+
+        int index = sessionIndex(sessionId);
+        if (index == -1)
+        {
+            throw SessionException("Session not found.");
+        }
+
+        char confirm;
+        cout << "\nAre you sure you want to remove this session? (Y/N): ";
+        cin >> confirm;
+
+        if (confirm == 'Y' || confirm == 'y')
+        {
+            sessionList.erase(sessionList.begin() + index);
+            clearScreen();
+            cout << "\nSession removed successfully.\n\n";
+            displaySession();
+        }
+        else
+        {
+            cout << "\nSession removal cancelled.\n";
+        }
     }
-    else
+    catch (const SessionException& ex)
     {
-        cout << "\nSession removal cancelled.\n";
+        cout << "\nERROR: " << ex.what() << "\n";
     }
 }
 
@@ -297,14 +302,12 @@ bool Session::hasSessions() {
 }
 
 bool Session::bookSessionById(int sessionId) {
-    int index = sessionIndex(sessionId);
-    if (index == -1) {
-        clearScreen();
-        cout << "\nERROR: Session not found.\n\n";
-        return false;
-    }
-
     try {
+        int index = sessionIndex(sessionId);
+        if (index == -1) {
+            throw SessionException("Session not found.");
+        }
+
         --sessionList[index];
         *this = sessionList[index];
         clearScreen();
@@ -313,6 +316,10 @@ bool Session::bookSessionById(int sessionId) {
              << " at " << sessionList[index].getTime()
              << " | Spaces left: " << sessionList[index].getSpacesAvailable() << "\n\n";
         return true;
+    } catch (const SessionException& ex) {
+        clearScreen();
+        cout << "\nERROR: " << ex.what() << "\n\n";
+        return false;
     } catch (const exception& ex) {
         clearScreen();
         cout << "\nERROR: " << ex.what() << "\n\n";
@@ -321,100 +328,120 @@ bool Session::bookSessionById(int sessionId) {
 }
 
 bool Session::unbookSessionById(int sessionId) {
-    int index = sessionIndex(sessionId);
-    if (index == -1) {
+    try
+    {
+        int index = sessionIndex(sessionId);
+        if (index == -1) {
+            throw SessionException("Session not found.");
+        }
+
+        ++sessionList[index];
         clearScreen();
-        cout << "\nERROR: Session not found.\n\n";
+        cout << "\nSession Unbooked Successfully!\n";
+        cout << "Unbooked: " << sessionList[index].getSessionName()
+             << " at " << sessionList[index].getTime()
+             << " | Spaces now: " << sessionList[index].getSpacesAvailable() << "\n\n";
+        return true;
+    }
+    catch (const SessionException& ex)
+    {
+        clearScreen();
+        cout << "\nERROR: " << ex.what() << "\n\n";
         return false;
     }
-
-    ++sessionList[index];
-    clearScreen();
-    cout << "\nSession Unbooked Successfully!\n";
-    cout << "Unbooked: " << sessionList[index].getSessionName()
-         << " at " << sessionList[index].getTime()
-         << " | Spaces now: " << sessionList[index].getSpacesAvailable() << "\n\n";
-    return true;
 }
 
 // Edit Session
 void Session::editSession() {
-    if (sessionList.empty()) {
-        cout << "\nNo sessions available to edit.\n";
-        return;
-    }
-
-    int sessionId;
-    displaySession();
-    cout << "Enter Session ID to edit (0 to return): ";
-    cin >> sessionId;
-
-    if (sessionId == 0) {
-        clearScreen();
-        return;
-    }
-
-    int index = sessionIndex(sessionId);
-    if (index == -1) {
-        cout << "\nERROR: Session not found.\n";
-        return;
-    }
-
-    Session& selectedSession = sessionList[index];
-    int choice;
-
-    do {
-        clearScreen();
-        line();
-        cout << "        EDIT SESSION DETAILS" << endl;
-        line();
-        cout << selectedSession;
-        line();
-        cout << "1) Session Name" << endl;
-        cout << "2) Trainer Name" << endl;
-        cout << "3) Session Date" << endl;
-        cout << "4) Session Time" << endl;
-        cout << "5) Spaces Available" << endl;
-        cout << "0) Return to Session Menu" << endl;
-        cout << "Choice: ";
-        cin >> choice;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        switch (choice) {
-            case 1:
-                cout << "\nEnter New Session Name: ";
-                getline(cin, selectedSession.sessionName);
-                break;
-
-            case 2:
-                cout << "\nEnter New Trainer Name: ";
-                getline(cin, selectedSession.trainerName);
-                break;
-
-            case 3:
-                cout << "\nEnter New Session Date\n";
-                getValidDate(selectedSession.sessionDay, selectedSession.sessionMonth, selectedSession.sessionYear);
-                break;
-
-            case 4:
-                cout << "\nEnter New Session Time: ";
-                getline(cin, selectedSession.time);
-                break;
-
-            case 5:
-                cout << "\nEnter New Number of Spaces: ";
-                cin >> selectedSession.spacesAvailable;
-                break;
-
-            case 0:
-                clearScreen();
-                break;
-
-            default:
-                cout << "\nERROR: Invalid Choice\n";
-                break;
+    try {
+        if (sessionList.empty()) {
+            throw SessionException("No sessions available to edit.");
         }
-    } while (choice != 0);
+
+        int sessionId;
+        displaySession();
+        cout << "Enter Session ID to edit (0 to return): ";
+        cin >> sessionId;
+
+        if (sessionId == 0) {
+            clearScreen();
+            return;
+        }
+
+        int index = sessionIndex(sessionId);
+        if (index == -1) {
+            throw SessionException("Session not found.");
+        }
+
+        Session& selectedSession = sessionList[index];
+        int choice;
+
+        do {
+            clearScreen();
+            line();
+            cout << "        EDIT SESSION DETAILS" << endl;
+            line();
+            cout << selectedSession;
+            line();
+            cout << "1) Session Name" << endl;
+            cout << "2) Trainer Name" << endl;
+            cout << "3) Session Date" << endl;
+            cout << "4) Session Time" << endl;
+            cout << "5) Spaces Available" << endl;
+            cout << "0) Return to Session Menu" << endl;
+            cout << "Choice: ";
+            cin >> choice;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            switch (choice) {
+                case 1:
+                    cout << "\nEnter New Session Name: ";
+                    getline(cin, selectedSession.sessionName);
+                    break;
+
+                case 2:
+                    cout << "\nEnter New Trainer Name: ";
+                    getline(cin, selectedSession.trainerName);
+                    break;
+
+                case 3:
+                    cout << "\nEnter New Session Date\n";
+                    getValidDate(selectedSession.sessionDay, selectedSession.sessionMonth, selectedSession.sessionYear);
+                    break;
+
+                case 4:
+                    cout << "\nEnter New Session Time: ";
+                    getline(cin, selectedSession.time);
+                    break;
+
+                case 5:
+                    cout << "\nEnter New Number of Spaces: ";
+                    cin >> selectedSession.spacesAvailable;
+                    if (cin.fail() || selectedSession.spacesAvailable < 0) {
+                        throw invalid_argument("Available spaces cannot be negative.");
+                    }
+                    break;
+
+                case 0:
+                    clearScreen();
+                    break;
+
+                default:
+                    cout << "\nERROR: Invalid Choice\n";
+                    break;
+            }
+        } while (choice != 0);
+    }
+    catch (const SessionException& ex)
+    {
+        cout << "\nERROR: " << ex.what() << "\n";
+    }
+    catch (const exception& ex)
+    {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "\nERROR: " << ex.what() << "\n";
+    }
 }
 
 // Book Session
