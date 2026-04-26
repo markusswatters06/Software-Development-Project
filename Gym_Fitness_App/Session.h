@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include "User.h"
 using namespace std;
 
 class Session {
@@ -73,6 +74,8 @@ public:
     // UI
     void clearScreen();
     void line() const;
+    void lineLong() const;
+    void dashedLine() const;
 };
 
 #endif
