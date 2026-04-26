@@ -255,8 +255,8 @@ void Session::displaySession() const {
     cout << "                              ALL SESSIONS\n";
     cout << "==========================================================================\n";
     cout << " ID | Session Name         | Trainer              | Date       | Time  | Spaces\n";
-    cout << "--------------------------------------------------------------------------\n";
-
+    dashedLine();
+    
     for (int i = 0; i < static_cast<int>(sessionList.size()); i++) {
         const Session& session = sessionList[i];
         if (session.id < 10) cout << "  ";
@@ -493,7 +493,16 @@ void Session::clearScreen() {
 }
 
 void Session::line() const {
-    cout << "========================================\n";
+     cout << "========================================\n";
+}
+
+void Session::lineLong() const
+{
+    cout << "=====================================================================================\n";
+}
+
+void Session::dashedLine() const {
+    cout << "-------------------------------------------------------------------------------------\n";
 }
 
 void Session::validateSession() const {
