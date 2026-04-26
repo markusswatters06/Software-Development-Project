@@ -4,6 +4,8 @@
 #include <cctype>
 #include <stdexcept>
 #include <sstream>
+#include <vector>
+#include "User.h"
 
 using namespace std;
 
@@ -13,6 +15,8 @@ using namespace std;
 class Goal
 {
     private: 
+    static int nextGoalId;
+    int id;
     double currentPR; 
     int days;
     int months; 
@@ -27,19 +31,25 @@ class Goal
     
     string status; 
 
+    static vector<Goal> goalList;
+    static int goalIndex(int goalId);
+
+
     public: 
     double improvement;
     double percentage;
     Goal(); 
-    Goal(double currentPR, int days, int months, int years, char timePeriod, double percentage, string goal, string type, double target, string deadline, double newPR, double improvement, string status);
+    Goal(int gid, double currentPR, int days, int months, int years, char timePeriod, double percentage, string goal, string type, double target, string deadline, double newPR, double improvement, string status);
     virtual ~Goal() {}
 
 
     virtual void checkProgress();
     virtual void updateStatus();
     virtual void updateProgress(); 
-    virtual void addGoal();
+    virtual void addGoal(const Goal& goal);
     virtual void editGoal();
+    virtual void removeGoal();
+    virtual void displayGoals() const;
     virtual void displayGoal(); 
     virtual void updateDeadline();
     
@@ -49,9 +59,9 @@ class Goal
     double getValidPositiveDouble(const string& prompt);
     int getValidPositiveInt(const string& prompt);
     char getValidCharInput(const string& prompt, const string& validOptions);
-    void clearInputStream();
 
     // Getters 
+    int getId() const { return id; }
     string getGoal() const { return goal; }
     string getType() const { return type; }
     double getTarget() const { return target; }
@@ -65,6 +75,7 @@ class Goal
     virtual string getSummary() const;
 
     // Setters
+    void setId(int gid){ id = gid; }
     void setGoal(string g) { goal = g; }
     void setType(string t) { type = t; }
     void setTarget(double t) { target = t; }
@@ -76,6 +87,8 @@ class Goal
     // UI
     void clearScreen();
     void line() const;
+    void lineLong() const;
+    void dashedLine() const;
 };
 
 #endif
