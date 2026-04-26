@@ -8,6 +8,11 @@
 #include "User.h"
 using namespace std;
 
+class SessionException : public runtime_error {
+public:
+    explicit SessionException(const string& message) : runtime_error(message) {}
+};
+
 class Session {
 private:
     static int nextSessionId;
