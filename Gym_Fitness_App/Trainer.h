@@ -6,6 +6,12 @@
 
 #include "User.h"
 #include "Session.h"
+#include "Goal.h"
+#include "Client.h"
+#include "Cardio.h"
+#include "Exercise.h"
+#include "WorkoutPlan.h"
+#include "WorkoutExercise.h"
 
 class Client;
 
@@ -20,10 +26,15 @@ class Trainer : public User{
         double sessionRate;     // Session Rate (€)
         string availablility;   // Session Availabilty
         Session trainerSession; //
+        Goal* trainerGoal;  
+        WorkoutPlan* trainerWorkout;;
+        vector<WorkoutPlan> trainerWorkouts;
+        vector<Goal> trainGoals;     
         vector<Client*> ownedClients;
         vector<Client*> assignedClients;
         bool isClientAssigned(int clientId) const;
         void printAvailableClientsTable() const;
+        void printProfileDetails() const;
 
     public:
         // Constructors & Destructor
@@ -55,6 +66,7 @@ class Trainer : public User{
         void setSessionsPerWeek(int swp){sessionsPerWeek = swp;}
         void setSessionRate(double sr){sessionRate = sr;}
         void setAvailability(string a){availablility = a;}
+        void setCurrentGoal(const Goal& newGoal);
 
 
         // Functions
@@ -66,7 +78,7 @@ class Trainer : public User{
         void clientMenu();
         void sessionMenu();
         void workoutMenu();
-        void progressMenu();
+        void goalMenu();
 
         // Profile
         void editProfile();
@@ -85,9 +97,29 @@ class Trainer : public User{
         void editSession();
         void removeSession();
         
+        // Goal
+        void addGoal(const Goal& goal);
+        void editGoal();
+        void removeGoal();
+        void displayGoal();
+        void displayGoals();
+        void displayClientGoals();
+        void updateProgress();
+        void updateDeadline();
+        void updateStatus();
+        void checkProgress();
+
+        // Workout
+        void displayWorkouts();
+        void createWorkout();
+        void editWorkout();
+        void removeWorkout();
+        void displayClientWorkouts();
 
         // UI
         void clearScreen();
         void line() const;
+        void lineLong();
+        void dashedLine();
 };
 #endif
